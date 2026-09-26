@@ -1,14 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
   <defs>
     <style>
-      .bg { fill: #0F766E; }
-      .letter { fill: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-weight: 900; }
+      .leaf-mark {
+        fill: #0F766E;
+      }
       @media (prefers-color-scheme: dark) {
-        .bg { fill: #2E2119; stroke: #3D2C20; stroke-width: 16px; }
-        .letter { fill: #F5F0E6; }
+        .leaf-mark {
+          fill: #F5F0E6;
+        }
       }
     </style>
   </defs>
-  <rect class="bg" width="512" height="512" rx="120" />
-  <text class="letter" x="50%" y="54%" text-anchor="middle" dominant-baseline="central" font-size="340">P</text>
+  <path
+    class="leaf-mark"
+    fill-rule="evenodd"
+    clip-rule="evenodd"
+    d="M 16 94 C 16 94, 25 80, 20 62 C 14 44, 14 24, 38 10 C 58 -2, 86 2, 94 20 C 98 28, 96 54, 80 74 C 64 90, 38 92, 16 94 Z M 36 28 L 36 74 L 47 74 L 47 54 L 58 54 C 68 54, 76 48, 76 41 C 76 34, 68 28, 58 28 L 36 28 Z M 47 36 L 56 36 C 62 36, 65 38, 65 41 C 65 44, 62 46, 56 46 L 47 46 L 47 36 Z"
+  />
 </svg>

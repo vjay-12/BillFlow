@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Printer, Bluetooth, Moon, Sun } from 'lucide-react';
 import { SyncStatusBadge } from '../ui/SyncStatusBadge';
 import { PWAInstallButton } from '../ui/PWAInstallButton';
+import { PasumaiLogo } from '../ui/PasumaiLogo';
 import { useUIStore } from '../../stores/uiStore';
 import { bluetoothPrinter } from '../../printing/bluetoothPrinter';
 
@@ -46,13 +47,11 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-2.5 sm:px-4 py-2 flex items-center justify-between gap-2 sm:gap-3 shadow-xs">
       {/* Brand & Store: Logo "P" and Business Name */}
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-        {/* Large "P" Logo (Teal in light mode, Walnut wood & cream in dark mode) */}
-        <div 
+        {/* Custom Leaf + P Monogram (sits directly on header background without container) */}
+        <PasumaiLogo 
           aria-label="Pasumai Cafe Logo"
-          className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#0F766E] text-white dark:bg-[#2E2119] dark:text-[#F5F0E6] dark:border dark:border-[#3D2C20] flex items-center justify-center font-black font-sans text-xl sm:text-2xl shadow-sm ring-1 ring-black/5 shrink-0 select-none transition-colors"
-        >
-          P
-        </div>
+          className="h-8.5 w-8.5 sm:h-9 sm:w-9 text-[#0F766E] dark:text-[#F5F0E6] shrink-0 transition-colors"
+        />
 
         {/* Brand Name & Tagline - Strictly Single-Line Nowrap */}
         <div className="min-w-0 flex flex-col justify-center">
