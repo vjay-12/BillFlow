@@ -187,10 +187,15 @@ export const ReceiptModal: React.FC = () => {
                   <span className="font-mono">-{bill.discount.toFixed(2)}</span>
                 </div>
               )}
-              {bill.tax > 0 && (
+              {bill.tax > 0 ? (
                 <div className="flex justify-between text-slate-600">
                   <span>Taxes (GST)</span>
                   <span className="font-mono">{bill.tax.toFixed(2)}</span>
+                </div>
+              ) : (
+                <div className="flex justify-between text-slate-500">
+                  <span>GST</span>
+                  <span className="font-mono">₹0.00</span>
                 </div>
               )}
 
@@ -223,7 +228,7 @@ export const ReceiptModal: React.FC = () => {
         </div>
 
         {/* Action Buttons Footer */}
-        <div className="no-print p-4 bg-white border-t border-slate-200 space-y-2">
+        <div className="no-print p-3.5 sm:p-4 bg-white border-t border-slate-200 space-y-2">
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={handleBrowserPrint}
@@ -243,29 +248,29 @@ export const ReceiptModal: React.FC = () => {
             </button>
           </div>
 
-          <div className="flex items-center gap-2 pt-1">
+          <div className="grid grid-cols-3 gap-2 pt-1">
             <button
               onClick={handleShareWhatsApp}
-              className="flex-1 py-2 px-3 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold text-xs flex items-center justify-center gap-1.5 transition"
+              className="py-2 px-1.5 sm:px-2 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold text-xs flex items-center justify-center gap-1 transition min-w-0"
             >
-              <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
-              <span>WhatsApp</span>
+              <Smartphone className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span className="whitespace-nowrap">WhatsApp</span>
             </button>
 
             <button
               onClick={handleCopyText}
-              className="py-2 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 font-bold text-xs flex items-center justify-center gap-1.5 transition"
+              className="py-2 px-1.5 sm:px-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 font-bold text-xs flex items-center justify-center gap-1 transition min-w-0"
             >
-              <Share2 className="w-3.5 h-3.5" />
-              <span>{copiedSummary ? 'Copied!' : 'Copy Summary'}</span>
+              <Share2 className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap">{copiedSummary ? 'Copied!' : 'Copy'}</span>
             </button>
 
             <button
               onClick={() => setIsReceiptModalOpen(false)}
-              className="py-2 px-3 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 hover:bg-teal-100 font-bold text-xs flex items-center justify-center gap-1 transition"
+              className="py-2 px-1.5 sm:px-2 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 hover:bg-teal-100 font-bold text-xs flex items-center justify-center gap-1 transition min-w-0"
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span>New Sale</span>
+              <Plus className="w-3.5 h-3.5 text-teal-700 shrink-0" />
+              <span className="whitespace-nowrap font-bold">New Sale</span>
             </button>
           </div>
         </div>

@@ -161,7 +161,7 @@ export const BillList: React.FC = () => {
       {bills && bills.length > 0 ? (
         <>
           {/* MOBILE VIEW: Single-column stacked row layout (no horizontal scroll) */}
-          <div className="md:hidden divide-y divide-slate-100 bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+          <div className="md:hidden divide-y divide-slate-100 dark:divide-[#3D2C20] bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
             {bills.map((bill) => (
               <div
                 key={bill.id}
@@ -255,7 +255,7 @@ export const BillList: React.FC = () => {
                     <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                <tbody className="divide-y divide-slate-100 dark:divide-[#3D2C20] font-medium text-slate-700">
                   {bills.map((bill) => (
                     <tr
                       key={bill.id}
@@ -428,7 +428,7 @@ export const BillList: React.FC = () => {
                 <h4 className="font-bold text-slate-700 mb-1.5 uppercase text-[10px] tracking-wider">
                   Ordered Items
                 </h4>
-                <div className="space-y-1 divide-y divide-slate-100">
+                <div className="space-y-1 divide-y divide-slate-100 dark:divide-[#3D2C20]">
                   {selectedBillForDetail.lines.map((l, i) => (
                     <div key={i} className="flex justify-between pt-1 text-xs">
                       <div>

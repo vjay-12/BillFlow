@@ -41,6 +41,7 @@ export const INITIAL_BUSINESS_PROFILE: BusinessProfile = {
   fssai: '12423000000000',
   currencySymbol: '₹',
   defaultTaxPercent: 5,
+  enableGst: true,
   paperWidth: '80mm',
   upiId: 'pasumaicafe@oksbi',
   printerBluetoothName: 'Pasumai Thermal 80mm',

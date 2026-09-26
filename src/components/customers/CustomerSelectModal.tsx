@@ -82,7 +82,7 @@ export const CustomerSelectModal: React.FC<CustomerSelectModalProps> = ({ isOpen
         </div>
 
         {/* Customer List */}
-        <div className="overflow-y-auto flex-1 p-3 space-y-1.5 divide-y divide-slate-100">
+        <div className="overflow-y-auto flex-1 p-3 space-y-1.5 divide-y divide-slate-100 dark:divide-[#3D2C20]">
           {customers && customers.length > 0 ? (
             customers.map((c) => {
               const isSelected = currentCustomer?.id === c.id;

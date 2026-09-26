@@ -126,8 +126,14 @@ html.dark .border-slate-200,
 html.dark .border-slate-300,
 html.dark .border-slate-200\/60,
 html.dark .border-slate-200\/80,
+html.dark :where([class*="divide-slate"] > :not(:last-child)),
+html.dark [class*="divide-slate"] > *,
+html.dark :where([class*="divide-"] > :not(:last-child)),
+html.dark [class*="divide-"] > *,
 html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
-html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+html.dark .divide-slate-100 > *,
+html.dark .divide-slate-200 > * {
   border-color: #3D2C20 !important;
 }
 

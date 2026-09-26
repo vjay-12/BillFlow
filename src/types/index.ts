@@ -62,6 +62,7 @@ export interface BusinessProfile {
   fssai?: string;
   currencySymbol: string;
   defaultTaxPercent: number;
+  enableGst?: boolean;
   paperWidth: '58mm' | '80mm';
   printerBluetoothName?: string;
   upiId?: string;

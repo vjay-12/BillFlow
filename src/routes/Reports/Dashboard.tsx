@@ -4,7 +4,9 @@ import {
   TrendingUp, 
   ShoppingBag, 
   DollarSign, 
-  Award
+  Award,
+  Download,
+  Share2
 } from 'lucide-react';
 import { db } from '../../db/schema';
 import { formatCurrency } from '../../lib/formatters';
@@ -84,6 +86,38 @@ export const ReportsDashboard: React.FC = () => {
     };
   }, [bills]);
 
+  const handleExportReport = () => {
+    if (!bills || bills.length === 0) {
+      alert('No sales data to export for this period.');
+      return;
+    }
+    const rows = [
+      ['Report Period', timeFilter.toUpperCase()],
+      ['Total Orders', stats.ordersCount.toString()],
+      ['Total Revenue', stats.totalRevenue.toString()],
+      ['Total Tax Collected', stats.totalTax.toString()],
+      ['Total Discounts', stats.totalDiscount.toString()],
+      ['Average Order Value', stats.avgOrderValue.toString()],
+      [''],
+      ['Top Selling Products', 'Units Sold', 'Revenue (INR)'],
+      ...stats.topItems.map((item) => [item.name, item.qty.toString(), item.revenue.toString()]),
+    ];
+    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map((e) => e.map(c => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `sales-report-${timeFilter}-${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleShareReport = () => {
+    const text = `*Pasumai Cafe - Sales Summary (${timeFilter.toUpperCase()})*\nOrders: ${stats.ordersCount}\nRevenue: ${formatCurrency(stats.totalRevenue)}\nTax: ${formatCurrency(stats.totalTax)}\nTop Dish: ${stats.topItems[0] ? `${stats.topItems[0].name} (${stats.topItems[0].qty} sold)` : 'None'}`;
+    const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(waUrl, '_blank');
+  };
+
   return (
     <div className="flex-1 p-4 lg:p-6 pb-20 md:pb-6 overflow-y-auto max-w-7xl mx-auto w-full space-y-5">
       {/* Top Banner & Date Filter */}
@@ -97,7 +131,7 @@ export const ReportsDashboard: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-bold text-slate-600">
             <button
               onClick={() => setTimeFilter('today')}
@@ -122,6 +156,27 @@ export const ReportsDashboard: React.FC = () => {
               }`}
             >
               All Time
+            </button>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={handleExportReport}
+              className="flex items-center gap-1 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition border border-slate-200"
+              title="Export CSV sales report"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Export CSV</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleShareReport}
+              className="flex items-center gap-1 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl text-xs font-bold transition border border-emerald-200"
+              title="Share report summary via WhatsApp"
+            >
+              <Share2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Share</span>
             </button>
           </div>
         </div>
@@ -264,7 +319,7 @@ export const ReportsDashboard: React.FC = () => {
         <h3 className="font-extrabold text-sm text-slate-800">Top Selling Products</h3>
 
         {stats.topItems.length > 0 ? (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-slate-100 dark:divide-[#3D2C20]">
             {stats.topItems.map((item, idx) => (
               <div key={idx} className="py-2.5 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2.5">

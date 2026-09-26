@@ -13,7 +13,6 @@ import { itemsRepo } from '../../db/itemsRepo';
 import { useUIStore } from '../../stores/uiStore';
 import { formatCurrency } from '../../lib/formatters';
 import type { Item } from '../../types';
-import { ItemFormModal } from '../../components/items/ItemFormModal';
 
 export const ItemsList: React.FC = () => {
   const { setIsItemFormModalOpen, setEditingItem } = useUIStore();
@@ -137,7 +136,7 @@ export const ItemsList: React.FC = () => {
       {items && items.length > 0 ? (
         <>
           {/* MOBILE VIEW: Single-column stacked row layout (no horizontal scroll) */}
-          <div className="md:hidden divide-y divide-slate-100 bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+          <div className="md:hidden divide-y divide-slate-100 dark:divide-[#3D2C20] bg-white rounded-2xl border border-slate-200 dark:border-[#3D2C20] shadow-xs overflow-hidden">
             {items.map((item) => (
               <div 
                 key={item.id}
@@ -236,7 +235,7 @@ export const ItemsList: React.FC = () => {
                     <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                <tbody className="divide-y divide-slate-100 dark:divide-[#3D2C20] font-medium text-slate-700">
                   {items.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-50/70 transition">
                       <td className="py-3 px-4">
@@ -326,8 +325,6 @@ export const ItemsList: React.FC = () => {
         </div>
       )}
 
-      {/* Add / Edit Item Modal */}
-      <ItemFormModal />
     </div>
   );
 };

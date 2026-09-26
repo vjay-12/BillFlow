@@ -214,24 +214,32 @@ export const PaymentModal: React.FC = () => {
               </div>
 
               {/* Quick Cash Suggestions */}
-              <div>
-                <span className="text-[11px] font-semibold text-slate-400 block mb-1.5">
-                  Quick Amount Presets
-                </span>
-                <div className="flex flex-wrap gap-2">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-slate-400 block">
+                    Quick Amount Presets
+                  </span>
                   <button
+                    type="button"
                     onClick={() => setTenderedCash(total)}
-                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-bold text-slate-700"
+                    className="px-2.5 py-1 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-lg text-xs font-bold border border-teal-200 transition cursor-pointer"
                   >
-                    Exact ({formatCurrency(total)})
+                    Exact: {formatCurrency(total)}
                   </button>
-                  {[100, 200, 500, 1000, 2000].map((amt) => {
-                    if (amt < total && total > 500) return null;
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {[50, 100, 200, 500].map((amt) => {
+                    const isSelected = tenderedCash === amt;
                     return (
                       <button
                         key={amt}
+                        type="button"
                         onClick={() => setTenderedCash(amt)}
-                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-bold font-mono text-slate-700"
+                        className={`py-2 rounded-xl text-xs font-extrabold font-mono transition border cursor-pointer text-center ${
+                          isSelected
+                            ? 'bg-teal-700 text-white border-teal-700 shadow-xs'
+                            : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200'
+                        }`}
                       >
                         ₹{amt}
                       </button>

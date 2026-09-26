@@ -8,7 +8,9 @@ import {
   Wallet, 
   Edit2, 
   Users, 
-  CreditCard
+  CreditCard,
+  MessageSquare,
+  Check
 } from 'lucide-react';
 import { db } from '../../db/schema';
 import { customersRepo } from '../../db/customersRepo';
@@ -47,6 +49,16 @@ export const CustomerList: React.FC = () => {
     }
     await customersRepo.settleOutstanding(c.id, amount);
     alert(`Settled ₹${amount} for ${c.name}.`);
+  };
+
+  const handleSendReminder = (c: Customer) => {
+    const message = `*Pasumai Cafe - Due Balance Reminder*\nDear ${c.name},\nThis is a friendly reminder that your outstanding balance at Pasumai Cafe is ${formatCurrency(c.outstanding)}.\nThank you!`;
+    const rawPhone = c.phone ? c.phone.replace(/[^0-9]/g, '') : '';
+    const phone = rawPhone.length === 10 ? `91${rawPhone}` : rawPhone;
+    const waUrl = phone
+      ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+      : `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(waUrl, '_blank');
   };
 
   const totalOutstanding = customers
@@ -160,14 +172,30 @@ export const CustomerList: React.FC = () => {
               <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
                 <span>Joined {formatDate(c.createdAt)}</span>
 
-                {c.outstanding > 0 && (
-                  <button
-                    onClick={() => handleConfirmSettle(c)}
-                    className="px-2.5 py-1 bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold rounded-lg border border-teal-200 transition flex items-center gap-1"
-                  >
-                    <CreditCard className="w-3 h-3 text-teal-600" />
-                    <span>Settle Dues</span>
-                  </button>
+                {c.outstanding > 0 ? (
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => handleSendReminder(c)}
+                      className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold rounded-lg border border-emerald-200 transition flex items-center gap-1 text-[10px]"
+                      title="Send WhatsApp payment reminder"
+                    >
+                      <MessageSquare className="w-3 h-3 text-emerald-600" />
+                      <span>Send Reminder</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleConfirmSettle(c)}
+                      className="px-2 py-1 bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold rounded-lg border border-teal-200 transition flex items-center gap-1 text-[10px]"
+                    >
+                      <CreditCard className="w-3 h-3 text-teal-600" />
+                      <span>Record Payment</span>
+                    </button>
+                  </div>
+                ) : (
+                  <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                    <Check className="w-3 h-3" /> No Dues
+                  </span>
                 )}
               </div>
             </div>

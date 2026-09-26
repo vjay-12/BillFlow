@@ -1,11 +1,6 @@
-
 import { ItemGrid } from '../components/billing/ItemGrid';
 import { CartSidebar } from '../components/billing/CartSidebar';
 import { StickyCartBar } from '../components/billing/StickyCartBar';
-import { PaymentModal } from '../components/billing/PaymentModal';
-import { ReceiptModal } from '../components/billing/ReceiptModal';
-import { ItemFormModal } from '../components/items/ItemFormModal';
-import { CustomerFormModal } from '../components/customers/CustomerFormModal';
 
 export const BillRoute: React.FC = () => {
   return (
@@ -22,12 +17,6 @@ export const BillRoute: React.FC = () => {
 
       {/* Mobile Floating Sticky Cart Bar */}
       <StickyCartBar />
-
-      {/* Common Modals */}
-      <PaymentModal />
-      <ReceiptModal />
-      <ItemFormModal />
-      <CustomerFormModal />
     </div>
   );
 };

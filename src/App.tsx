@@ -11,15 +11,27 @@ import { ReportsDashboard } from './routes/Reports/Dashboard';
 import { SettingsRoute } from './routes/Settings';
 import { useUIStore } from './stores/uiStore';
 import { useCartStore } from './stores/cartStore';
+import { PaymentModal } from './components/billing/PaymentModal';
+import { ReceiptModal } from './components/billing/ReceiptModal';
+import { ItemFormModal } from './components/items/ItemFormModal';
+import { CustomerFormModal } from './components/customers/CustomerFormModal';
 
 export function App() {
   const { activeTab, setActiveTab, setIsPaymentModalOpen } = useUIStore();
   const cartLines = useCartStore((s) => s.lines);
 
-  // Business profile name for header
+  // Business profile name for header & global settings
   const profile = useLiveQuery(async () => {
     return await db.businessProfile.get('main');
   }, []);
+
+  // Sync GST setting from profile to cartStore and localStorage
+  useEffect(() => {
+    if (profile?.enableGst !== undefined) {
+      useCartStore.getState().setGstEnabled(profile.enableGst);
+      localStorage.setItem('billflow_enable_gst', String(profile.enableGst));
+    }
+  }, [profile?.enableGst]);
 
   // Initialize seed database on app mount
   useEffect(() => {
@@ -79,6 +91,12 @@ export function App() {
         {activeTab === 'reports' && <ReportsDashboard />}
         {activeTab === 'settings' && <SettingsRoute />}
       </main>
+
+      {/* Global Modals (accessible across any active screen) */}
+      <PaymentModal />
+      <ReceiptModal />
+      <ItemFormModal />
+      <CustomerFormModal />
     </div>
   );
 }

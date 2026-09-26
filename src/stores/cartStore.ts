@@ -9,6 +9,7 @@ interface CartState {
   discountType: 'percent' | 'fixed';
   discountValue: number;
   cashierName: string;
+  isGstEnabled: boolean;
 
   // Actions
   addItem: (item: Item, qty?: number) => void;
@@ -22,6 +23,7 @@ interface CartState {
   setCustomer: (customer: Customer | null) => void;
   setDiscount: (type: 'percent' | 'fixed', val: number) => void;
   setCashierName: (name: string) => void;
+  setGstEnabled: (enabled: boolean) => void;
   clearCart: () => void;
 
   // Computed values
@@ -40,6 +42,9 @@ export const useCartStore = create<CartState>((set, get) => ({
   discountType: 'fixed',
   discountValue: 0,
   cashierName: 'Counter 1',
+  isGstEnabled: typeof localStorage !== 'undefined' ? localStorage.getItem('billflow_enable_gst') !== 'false' : true,
+
+  setGstEnabled: (isGstEnabled) => set({ isGstEnabled }),
 
   addItem: (item: Item, qty = 1) => {
     set((state) => {
@@ -140,6 +145,8 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
 
   getTaxAmount: () => {
+    if (!get().isGstEnabled) return 0;
+
     const subtotal = get().getSubtotal();
     const discount = get().getDiscountAmount();
     const taxableAmount = Math.max(0, subtotal - discount);
