@@ -50,7 +50,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Custom Leaf + P Monogram (sits directly on header background without container) */}
         <PasumaiLogo 
           aria-label="Pasumai Cafe Logo"
-          className="h-8.5 w-8.5 sm:h-9 sm:w-9 text-[#0F766E] dark:text-[#F5F0E6] shrink-0 transition-colors"
+          className="h-9 w-auto sm:h-10 shrink-0"
         />
 
         {/* Brand Name & Tagline - Strictly Single-Line Nowrap */}
