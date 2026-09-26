@@ -19,7 +19,7 @@ export const SyncStatusBadge: React.FC = () => {
       try {
         const count = await syncQueue.getPendingCount();
         setPendingSyncCount(count);
-      } catch (err) {
+      } catch {
         // quiet catch
       }
     };
@@ -49,10 +49,10 @@ export const SyncStatusBadge: React.FC = () => {
     return (
       <div 
         title="App is working offline. All data is saved to IndexedDB and will sync when reconnected."
-        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200"
+        className="inline-flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 shrink-0"
       >
         <CloudOff className="w-3.5 h-3.5 text-amber-600" />
-        <span>Offline Mode</span>
+        <span className="hidden sm:inline">Offline Mode</span>
         {pendingSyncCount > 0 && (
           <span className="bg-amber-200 text-amber-800 text-[10px] px-1.5 py-0.2 rounded-full font-bold">
             {pendingSyncCount}
@@ -64,9 +64,9 @@ export const SyncStatusBadge: React.FC = () => {
 
   if (isSyncing) {
     return (
-      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 animate-pulse">
+      <div className="inline-flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 animate-pulse shrink-0">
         <RefreshCw className="w-3.5 h-3.5 text-blue-600 animate-spin" />
-        <span>Syncing...</span>
+        <span className="hidden sm:inline">Syncing...</span>
       </div>
     );
   }
@@ -76,10 +76,14 @@ export const SyncStatusBadge: React.FC = () => {
       <button
         onClick={handleManualSync}
         title="Unsynced local records. Click to sync."
-        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition"
+        aria-label={`Unsynced local records (${pendingSyncCount}). Click to sync.`}
+        className="inline-flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition shrink-0"
       >
         <RefreshCw className="w-3.5 h-3.5 text-indigo-600" />
-        <span>Sync ({pendingSyncCount})</span>
+        <span className="hidden sm:inline">Sync ({pendingSyncCount})</span>
+        <span className="sm:hidden text-[10px] font-bold bg-indigo-200 text-indigo-800 px-1 rounded-full">
+          {pendingSyncCount}
+        </span>
       </button>
     );
   }
@@ -88,10 +92,11 @@ export const SyncStatusBadge: React.FC = () => {
     <button
       onClick={handleManualSync}
       title="All bills and records are saved locally & synced."
-      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition"
+      aria-label="All bills and records are saved locally and synced"
+      className="inline-flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition shrink-0"
     >
       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-      <span>Synced</span>
+      <span className="hidden sm:inline">Synced</span>
     </button>
   );
 };

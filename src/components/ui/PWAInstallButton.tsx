@@ -3,14 +3,15 @@ import { Download } from 'lucide-react';
 
 export const PWAInstallButton: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [isStandalone, setIsStandalone] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true
+    );
+  });
 
   useEffect(() => {
-    // Check if already running in standalone mode
-    const standalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as any).standalone === true;
-    setIsStandalone(standalone);
 
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
@@ -55,11 +56,11 @@ export const PWAInstallButton: React.FC = () => {
       type="button"
       onClick={handleInstallClick}
       title="Install BillFlow POS as a standalone app"
-      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-teal-700 hover:bg-teal-800 text-white shadow-xs transition select-none cursor-pointer"
+      aria-label="Install BillFlow POS as a standalone app"
+      className="inline-flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-bold bg-teal-700 hover:bg-teal-800 text-white shadow-xs transition select-none cursor-pointer shrink-0"
     >
-      <Download className="w-3.5 h-3.5 stroke-[2.5]" />
+      <Download className="w-4 h-4 sm:w-3.5 sm:h-3.5 stroke-[2.5]" />
       <span className="hidden sm:inline">Install App</span>
-      <span className="sm:hidden">Install</span>
     </button>
   );
 };

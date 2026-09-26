@@ -43,22 +43,11 @@ export const itemsRepo = {
     await this.update(id, { active: !currentActive });
   },
 
-  async deductStock(lines: { itemId: string; qty: number }[]): Promise<void> {
-    for (const line of lines) {
-      const item = await db.items.get(line.itemId);
-      if (item && item.trackStock && typeof item.stockQty === 'number') {
-        const newQty = Math.max(0, item.stockQty - line.qty);
-        await db.items.update(line.itemId, { stockQty: newQty });
-      }
-    }
+  async deductStock(_lines: { itemId: string; qty: number }[]): Promise<void> {
+    // Stock-tracking removed for simplified cafe kitchen billing
   },
 
-  async restoreStock(lines: { itemId: string; qty: number }[]): Promise<void> {
-    for (const line of lines) {
-      const item = await db.items.get(line.itemId);
-      if (item && item.trackStock && typeof item.stockQty === 'number') {
-        await db.items.update(line.itemId, { stockQty: item.stockQty + line.qty });
-      }
-    }
+  async restoreStock(_lines: { itemId: string; qty: number }[]): Promise<void> {
+    // Stock-tracking removed for simplified cafe kitchen billing
   },
 };

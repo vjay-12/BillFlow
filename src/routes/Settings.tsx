@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { 
   Building2, 
@@ -26,14 +26,14 @@ export const SettingsRoute: React.FC = () => {
   }, []);
 
   const [profile, setProfile] = useState<BusinessProfile>(INITIAL_BUSINESS_PROFILE);
+  const [prevRecord, setPrevRecord] = useState(profileRecord);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [btStatus, setBtStatus] = useState<string>('Disconnected');
 
-  useEffect(() => {
-    if (profileRecord) {
-      setProfile(profileRecord);
-    }
-  }, [profileRecord]);
+  if (profileRecord && profileRecord !== prevRecord) {
+    setPrevRecord(profileRecord);
+    setProfile(profileRecord);
+  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();

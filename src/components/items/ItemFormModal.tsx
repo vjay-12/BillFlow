@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X, Save, Leaf, Flame } from 'lucide-react';
 import { useUIStore } from '../../stores/uiStore';
 import { itemsRepo } from '../../db/itemsRepo';
@@ -7,13 +7,15 @@ import type { Item } from '../../types';
 export const ItemFormModal: React.FC = () => {
   const { isItemFormModalOpen, setIsItemFormModalOpen, editingItem, setEditingItem } = useUIStore();
 
-  const [name, setName] = useState('');
-  const [code, setCode] = useState('');
-  const [category, setCategory] = useState('Tiffin');
-  const [price, setPrice] = useState<number>(50);
-  const [isVeg, setIsVeg] = useState(true);
+  const [name, setName] = useState(editingItem?.name || '');
+  const [code, setCode] = useState(editingItem?.code || '');
+  const [category, setCategory] = useState(editingItem?.category || 'Tiffin');
+  const [price, setPrice] = useState<number>(editingItem?.price ?? 50);
+  const [isVeg, setIsVeg] = useState(editingItem?.isVeg ?? true);
+  const [prevEditing, setPrevEditing] = useState(editingItem);
 
-  useEffect(() => {
+  if (editingItem !== prevEditing) {
+    setPrevEditing(editingItem);
     if (editingItem) {
       setName(editingItem.name);
       setCode(editingItem.code);
@@ -22,12 +24,12 @@ export const ItemFormModal: React.FC = () => {
       setIsVeg(editingItem.isVeg ?? true);
     } else {
       setName('');
-      setCode(`ITM${Math.floor(100 + Math.random() * 900)}`);
+      setCode('');
       setCategory('Tiffin');
       setPrice(50);
       setIsVeg(true);
     }
-  }, [editingItem, isItemFormModalOpen]);
+  }
 
   if (!isItemFormModalOpen) return null;
 
@@ -57,7 +59,6 @@ export const ItemFormModal: React.FC = () => {
           taxPercent: 5,
           isVeg,
           active: true,
-          trackStock: false,
         };
         await itemsRepo.create(newItem);
       }

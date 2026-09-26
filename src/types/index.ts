@@ -4,12 +4,9 @@ export interface Item {
   code: string;
   category: string;
   price: number;
-  taxPercent: number;
+  taxPercent?: number;
   isVeg?: boolean;
   active: boolean; // archived = false
-  trackStock: boolean;
-  stockQty?: number;
-  lowStockAlert?: number;
   photoUrl?: string;
 }
 

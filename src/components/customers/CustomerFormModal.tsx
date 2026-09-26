@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X, Save, User, Phone, Wallet } from 'lucide-react';
 import { useUIStore } from '../../stores/uiStore';
 import { customersRepo } from '../../db/customersRepo';
@@ -7,21 +7,17 @@ import type { Customer } from '../../types';
 export const CustomerFormModal: React.FC = () => {
   const { isCustomerFormModalOpen, setIsCustomerFormModalOpen, editingCustomer, setEditingCustomer } = useUIStore();
 
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [outstanding, setOutstanding] = useState<number>(0);
+  const [name, setName] = useState(editingCustomer?.name || '');
+  const [phone, setPhone] = useState(editingCustomer?.phone || '');
+  const [outstanding, setOutstanding] = useState<number>(editingCustomer?.outstanding || 0);
+  const [prevEditing, setPrevEditing] = useState(editingCustomer);
 
-  useEffect(() => {
-    if (editingCustomer) {
-      setName(editingCustomer.name);
-      setPhone(editingCustomer.phone);
-      setOutstanding(editingCustomer.outstanding);
-    } else {
-      setName('');
-      setPhone('');
-      setOutstanding(0);
-    }
-  }, [editingCustomer, isCustomerFormModalOpen]);
+  if (editingCustomer !== prevEditing) {
+    setPrevEditing(editingCustomer);
+    setName(editingCustomer?.name || '');
+    setPhone(editingCustomer?.phone || '');
+    setOutstanding(editingCustomer?.outstanding || 0);
+  }
 
   if (!isCustomerFormModalOpen) return null;
 

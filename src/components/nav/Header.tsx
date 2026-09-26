@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Receipt, Search, Printer, Bluetooth, Moon, Sun } from 'lucide-react';
+import { Search, Printer, Bluetooth, Moon, Sun } from 'lucide-react';
 import { SyncStatusBadge } from '../ui/SyncStatusBadge';
 import { PWAInstallButton } from '../ui/PWAInstallButton';
 import { useUIStore } from '../../stores/uiStore';
@@ -43,22 +43,26 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-2 flex items-center justify-between gap-3 shadow-xs">
-      {/* Brand & Store */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-700 to-teal-600 flex items-center justify-center text-white shadow-md shadow-emerald-700/20 ring-1 ring-emerald-600/30">
-          <Receipt className="w-5 h-5 stroke-[2.2]" />
+    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-2.5 sm:px-4 py-2 flex items-center justify-between gap-2 sm:gap-3 shadow-xs">
+      {/* Brand & Store: Logo "P" and Business Name */}
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+        {/* Large "P" Logo (Teal in light mode, Walnut wood & cream in dark mode) */}
+        <div 
+          aria-label="Pasumai Cafe Logo"
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#0F766E] text-white dark:bg-[#2E2119] dark:text-[#F5F0E6] dark:border dark:border-[#3D2C20] flex items-center justify-center font-black font-sans text-xl sm:text-2xl shadow-sm ring-1 ring-black/5 shrink-0 select-none transition-colors"
+        >
+          P
         </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight leading-tight cafe-metallic-text">
-              {businessName}
-            </h1>
-            <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded">
-              Organic
-            </span>
-          </div>
-          <p className="text-[11px] font-semibold text-emerald-800/80 truncate max-w-[180px] md:max-w-[260px]">
+
+        {/* Brand Name & Tagline - Strictly Single-Line Nowrap */}
+        <div className="min-w-0 flex flex-col justify-center">
+          <h1
+            style={{ fontSize: 'clamp(18px, 4vw, 22px)' }}
+            className="font-extrabold text-slate-900 tracking-tight leading-tight whitespace-nowrap overflow-hidden text-ellipsis cafe-metallic-text"
+          >
+            {businessName}
+          </h1>
+          <p className="text-[10px] sm:text-[11px] font-semibold text-emerald-800/80 dark:text-[#B8A990] whitespace-nowrap overflow-hidden text-ellipsis leading-tight">
             {tagline}
           </p>
         </div>
@@ -89,7 +93,7 @@ export const Header: React.FC<HeaderProps> = ({
       )}
 
       {/* Actions & Status */}
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
         {/* Live Clock */}
         <div className="hidden lg:flex flex-col items-end pr-2 border-r border-slate-200">
           <span className="text-xs font-mono font-bold text-slate-700">{currentTime}</span>

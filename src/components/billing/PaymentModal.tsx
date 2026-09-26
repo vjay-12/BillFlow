@@ -95,7 +95,7 @@ export const PaymentModal: React.FC = () => {
           spread: 60,
           origin: { y: 0.6 },
         });
-      } catch (e) {
+      } catch {
         // quiet ignore
       }
 
