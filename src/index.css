@@ -1,26 +1,377 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
     --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
+    
+    /* Theme tokens - Light mode */
+    --color-bg-base: #f8fafc;
+    --color-bg-surface: #ffffff;
+    --color-bg-subtle: #f1f5f9;
+    --color-bg-hover: #e2e8f0;
+    --color-border: #e2e8f0;
+    --color-border-subtle: #f1f5f9;
+    
+    --color-text-primary: #0f172a;
+    --color-text-secondary: #475569;
+    --color-text-muted: #94a3b8;
+    
     --color-primary: #0F766E;
-    --color-primary-dark: #115E59;
-    --color-accent: #F59E0B;
-    --color-surface: #F8FAFC;
+    --color-primary-hover: #0D655E;
+    --color-primary-light: #CCFBF1;
+    
+    --color-accent: #D97706;
+    --color-accent-light: #FEF3C7;
+    
+    --color-success: #10B981;
+    --color-success-light: #D1FAE5;
+    
+    --color-danger: #EF4444;
+    --color-danger-light: #FEE2E2;
+
+    --color-metallic: #94A3B8;
+  }
+
+  .dark, [data-theme="dark"] {
+    /* Café-inspired warm dark theme tokens */
+    --color-bg-base: #211712;       /* Deep warm walnut brown */
+    --color-bg-surface: #2E2119;    /* Slightly lighter warm brown */
+    --color-bg-subtle: #271C15;     /* Darker warm walnut for inputs/stripes */
+    --color-bg-hover: #38291F;      /* Hover state */
+    --color-border: #3D2C20;        /* Subtle warm divider */
+    --color-border-subtle: #33241A;
+    
+    --color-text-primary: #F5F0E6;  /* Warm off-white/cream */
+    --color-text-secondary: #D4C7B5;/* Warm secondary */
+    --color-text-muted: #B8A990;    /* Warm taupe-gray */
+    
+    --color-primary: #14A89B;       /* Radiant teal for contrast on dark */
+    --color-primary-hover: #17BEAF;
+    --color-primary-light: rgba(20, 168, 155, 0.18);
+    
+    --color-accent: #D98E3B;        /* Warm copper/amber ceiling slat tone */
+    --color-accent-light: rgba(217, 142, 59, 0.18);
+    
+    --color-success: #34D399;       /* Softened green */
+    --color-success-light: rgba(52, 211, 153, 0.15);
+    
+    --color-danger: #F87171;        /* Softened red */
+    --color-danger-light: rgba(248, 113, 113, 0.15);
+
+    --color-metallic: #C9C9C9;      /* Brushed metallic lettering */
   }
 
   body {
     font-family: var(--font-sans);
-    background-color: #f8fafc;
-    color: #1e293b;
+    background-color: var(--color-bg-base);
+    color: var(--color-text-primary);
     -webkit-tap-highlight-color: transparent;
     user-select: none;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   }
 
   input, textarea, select {
     user-select: auto;
   }
+}
+
+/* ========================================================
+   CAFÉ WARM DARK THEME SYSTEM RULES
+   Applied automatically when .dark is present on <html>
+   ======================================================== */
+
+/* Base Canvas & Layout Containers */
+html.dark,
+html.dark body,
+html.dark #root,
+html.dark .bg-slate-100,
+html.dark .bg-slate-50,
+html.dark main {
+  background-color: #211712 !important;
+  color: #F5F0E6 !important;
+}
+
+/* Surfaces / Cards */
+html.dark .bg-white {
+  background-color: #2E2119 !important;
+  color: #F5F0E6 !important;
+}
+
+/* Subtle surfaces / Tables / Form backgrounds */
+html.dark .bg-slate-50\/70,
+html.dark .bg-slate-50\/80,
+html.dark .bg-slate-50\/90,
+html.dark .bg-slate-100\/80,
+html.dark tr.hover\:bg-slate-50\/80:hover {
+  background-color: #271C15 !important;
+}
+
+/* Hover States */
+html.dark .hover\:bg-slate-100:hover,
+html.dark .hover\:bg-slate-200:hover,
+html.dark .hover\:bg-slate-200\/60:hover {
+  background-color: #38291F !important;
+}
+
+html.dark .hover\:bg-slate-50:hover {
+  background-color: #2E2119 !important;
+}
+
+/* Dividers & Borders */
+html.dark .border-slate-100,
+html.dark .border-slate-200,
+html.dark .border-slate-300,
+html.dark .border-slate-200\/60,
+html.dark .border-slate-200\/80,
+html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #3D2C20 !important;
+}
+
+/* Typography Overrides */
+html.dark .text-slate-900,
+html.dark .text-slate-800,
+html.dark .text-slate-700 {
+  color: #F5F0E6 !important;
+}
+
+html.dark .text-slate-600,
+html.dark .text-slate-500 {
+  color: #D4C7B5 !important;
+}
+
+html.dark .text-slate-400 {
+  color: #B8A990 !important;
+}
+
+html.dark .text-slate-300 {
+  color: #8C7B65 !important;
+}
+
+/* Primary Teal Actions - Shifted to brighter radiant teal #14A89B on dark */
+html.dark .bg-teal-700,
+html.dark .bg-teal-800 {
+  background-color: #14A89B !important;
+  color: #ffffff !important;
+}
+
+html.dark .hover\:bg-teal-800:hover,
+html.dark .hover\:bg-teal-900:hover {
+  background-color: #17BEAF !important;
+}
+
+html.dark .text-teal-700,
+html.dark .text-teal-800,
+html.dark .text-teal-900 {
+  color: #14A89B !important;
+}
+
+html.dark .border-teal-600,
+html.dark .border-teal-700 {
+  border-color: #14A89B !important;
+}
+
+html.dark .ring-teal-600\/20,
+html.dark .ring-teal-500\/20 {
+  --tw-ring-color: rgba(20, 168, 155, 0.25) !important;
+}
+
+html.dark .bg-teal-50,
+html.dark .bg-teal-100 {
+  background-color: rgba(20, 168, 155, 0.16) !important;
+  color: #F5F0E6 !important;
+}
+
+html.dark .border-teal-200 {
+  border-color: rgba(20, 168, 155, 0.35) !important;
+}
+
+/* Emerald Accents (Veg / Sync) */
+html.dark .bg-emerald-600,
+html.dark .bg-emerald-700,
+html.dark .bg-emerald-800 {
+  background-color: #10B981 !important;
+}
+
+html.dark .text-emerald-600,
+html.dark .text-emerald-700,
+html.dark .text-emerald-800 {
+  color: #34D399 !important;
+}
+
+html.dark .bg-emerald-50,
+html.dark .bg-emerald-100 {
+  background-color: rgba(52, 211, 153, 0.15) !important;
+  color: #34D399 !important;
+}
+
+html.dark .border-emerald-200,
+html.dark .border-emerald-300 {
+  border-color: rgba(52, 211, 153, 0.3) !important;
+}
+
+/* Accent (Discounts, Amber, Warnings, Ceiling Wood Slat Accents) */
+html.dark .text-amber-600,
+html.dark .text-amber-700,
+html.dark .text-amber-800 {
+  color: #D98E3B !important;
+}
+
+html.dark .bg-amber-50,
+html.dark .bg-amber-100 {
+  background-color: rgba(217, 142, 59, 0.18) !important;
+  color: #D98E3B !important;
+}
+
+html.dark .border-amber-200,
+html.dark .border-amber-300 {
+  border-color: rgba(217, 142, 59, 0.35) !important;
+}
+
+/* Danger / Cancel (Softened Red) */
+html.dark .text-rose-600,
+html.dark .text-rose-700,
+html.dark .text-rose-800 {
+  color: #F87171 !important;
+}
+
+html.dark .bg-rose-50,
+html.dark .bg-rose-100 {
+  background-color: rgba(248, 113, 113, 0.15) !important;
+  color: #F87171 !important;
+}
+
+html.dark .border-rose-200,
+html.dark .border-rose-300 {
+  border-color: rgba(248, 113, 113, 0.3) !important;
+}
+
+/* Form Controls & Inputs in Dark Mode */
+html.dark input[type="text"],
+html.dark input[type="number"],
+html.dark input[type="search"],
+html.dark input[type="date"],
+html.dark textarea,
+html.dark select {
+  background-color: #271C15 !important;
+  border-color: #3D2C20 !important;
+  color: #F5F0E6 !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #B8A990 !important;
+}
+
+html.dark select option {
+  background-color: #2E2119 !important;
+  color: #F5F0E6 !important;
+}
+
+/* Blue / Sky / Indigo Accents (UPI, Card, Bluetooth) */
+html.dark .text-blue-600,
+html.dark .text-blue-700 {
+  color: #60A5FA !important;
+}
+
+html.dark .text-sky-600,
+html.dark .text-sky-700 {
+  color: #38BDF8 !important;
+}
+
+html.dark .text-indigo-600,
+html.dark .text-indigo-700 {
+  color: #818CF8 !important;
+}
+
+html.dark .bg-blue-50,
+html.dark .bg-blue-100 {
+  background-color: rgba(96, 165, 250, 0.15) !important;
+  color: #60A5FA !important;
+}
+
+/* Icon stroke adjustments for dark mode */
+html.dark svg.text-slate-400 {
+  color: #B8A990 !important;
+}
+
+html.dark svg.text-slate-500,
+html.dark svg.text-slate-600 {
+  color: #D4C7B5 !important;
+}
+
+/* Navigation & Sticky Bar Blur Backdrops in Dark Mode */
+html.dark nav.bg-white,
+html.dark header.bg-white\/95,
+html.dark .fixed.bg-white\/95,
+html.dark .fixed.bottom-0 {
+  background-color: rgba(46, 33, 25, 0.95) !important;
+  border-color: #3D2C20 !important;
+}
+
+/* Modals & Backdrops in Dark Mode */
+html.dark .fixed.inset-0.bg-slate-900\/60,
+html.dark .fixed.inset-0.bg-slate-900\/50,
+html.dark .fixed.inset-0.bg-slate-900\/70,
+html.dark .fixed.inset-0.bg-black\/50,
+html.dark .fixed.inset-0.bg-black\/60 {
+  background-color: rgba(18, 12, 9, 0.8) !important;
+}
+
+/* Brushed Metallic Signage Lettering & Badges */
+.cafe-metallic-badge {
+  background: linear-gradient(135deg, rgba(201, 201, 201, 0.15) 0%, rgba(160, 160, 160, 0.08) 100%);
+  border: 1px solid rgba(201, 201, 201, 0.25);
+  color: #E2E8F0;
+}
+
+html.dark .cafe-metallic-text {
+  color: #C9C9C9 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Authentic thermal paper card inside dark mode receipt modal */
+html.dark #thermal-receipt-print-area {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.dark #thermal-receipt-print-area * {
+  color: #0f172a !important;
+}
+
+html.dark #thermal-receipt-print-area .text-slate-950,
+html.dark #thermal-receipt-print-area .text-slate-900,
+html.dark #thermal-receipt-print-area .text-slate-800,
+html.dark #thermal-receipt-print-area .text-slate-700 {
+  color: #0f172a !important;
+}
+
+html.dark #thermal-receipt-print-area .text-slate-600,
+html.dark #thermal-receipt-print-area .text-slate-500 {
+  color: #475569 !important;
+}
+
+html.dark #thermal-receipt-print-area .border-slate-300,
+html.dark #thermal-receipt-print-area .border-slate-200 {
+  border-color: #cbd5e1 !important;
+}
+
+/* Custom Scrollbars in Dark Mode */
+html.dark ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #3D2C20;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #4D382B;
 }
 
 /* Utility to hide scrollbars while maintaining scrollability */
@@ -32,7 +383,7 @@
   scrollbar-width: none;
 }
 
-/* Custom scrollbars */
+/* Custom scrollbars (Light) */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;

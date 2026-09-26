@@ -8,13 +8,19 @@ import {
   Database, 
   RotateCcw, 
   CheckCircle,
-  Download
+  Download,
+  Moon,
+  Sun,
+  Palette,
+  Check
 } from 'lucide-react';
 import { db, INITIAL_BUSINESS_PROFILE, seedInitialDataIfNeeded } from '../db/schema';
 import { bluetoothPrinter } from '../printing/bluetoothPrinter';
+import { useUIStore } from '../stores/uiStore';
 import type { BusinessProfile } from '../types';
 
 export const SettingsRoute: React.FC = () => {
+  const { isDarkMode, setDarkMode, toggleDarkMode } = useUIStore();
   const profileRecord = useLiveQuery(async () => {
     return await db.businessProfile.get('main');
   }, []);
@@ -106,6 +112,196 @@ export const SettingsRoute: React.FC = () => {
             <span>Settings Saved!</span>
           </div>
         )}
+      </div>
+
+      {/* Appearance & Theme (Pasumai Café Warm Dark Mode) */}
+      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <Palette className="w-5 h-5 text-teal-700" />
+            <div>
+              <h3 className="font-bold text-slate-800 text-sm">Appearance & Theme</h3>
+              <p className="text-[11px] text-slate-500">
+                Switch between Crisp Daytime Light and Pasumai Café Warm Dark theme
+              </p>
+            </div>
+          </div>
+
+          {/* Live indicator badge */}
+          <span
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
+              isDarkMode
+                ? 'bg-[#2E2119] text-[#F5F0E6] border border-[#3D2C20] shadow-2xs'
+                : 'bg-teal-50 text-teal-800 border border-teal-200'
+            }`}
+          >
+            {isDarkMode ? (
+              <Moon className="w-3.5 h-3.5 text-[#D98E3B]" />
+            ) : (
+              <Sun className="w-3.5 h-3.5 text-amber-500" />
+            )}
+            <span>{isDarkMode ? 'Café Warm Dark Active' : 'Crisp Light Active'}</span>
+          </span>
+        </div>
+
+        {/* Main Switch Row */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+          <div className="space-y-1 max-w-xl">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-bold text-slate-900 text-sm">Dark Mode</span>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
+                Pasumai Café Interior
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Warm dark palette inspired by Pasumai Cafe's actual interior woodwork, cream walls, and ceiling slats. Designed to reduce eye strain in evening counter environments while maintaining WCAG AA contrast.
+            </p>
+          </div>
+
+          {/* Interactive Switch Toggle */}
+          <div className="flex items-center gap-3 shrink-0 self-start sm:self-center">
+            <span className="text-xs font-bold text-slate-600">
+              {isDarkMode ? 'Dark' : 'Light'}
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isDarkMode}
+              aria-label="Toggle Pasumai Cafe dark mode"
+              onClick={toggleDarkMode}
+              className={`relative inline-flex h-8 w-15 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2 ${
+                isDarkMode ? 'bg-[#14A89B]' : 'bg-slate-300'
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-flex h-7 w-7 transform rounded-full bg-white shadow-md ring-0 items-center justify-center transition duration-200 ease-in-out ${
+                  isDarkMode ? 'translate-x-7 bg-[#211712]' : 'translate-x-0'
+                }`}
+              >
+                {isDarkMode ? (
+                  <Moon className="w-4 h-4 text-[#D98E3B]" />
+                ) : (
+                  <Sun className="w-4 h-4 text-amber-500" />
+                )}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* Preset Selector Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          {/* Light Theme Card */}
+          <button
+            type="button"
+            onClick={() => setDarkMode(false)}
+            className={`p-3.5 rounded-xl border text-left transition flex items-start gap-3 cursor-pointer ${
+              !isDarkMode
+                ? 'border-teal-600 bg-teal-50/60 ring-2 ring-teal-500/20 shadow-xs'
+                : 'border-slate-200 hover:border-slate-300 bg-white'
+            }`}
+          >
+            <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 mt-0.5">
+              <Sun className="w-4 h-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-xs text-slate-900">Crisp Daytime Light</span>
+                {!isDarkMode && <Check className="w-4 h-4 text-teal-700" />}
+              </div>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Clean bright canvas optimized for high-ambient daytime checkout counters.
+              </p>
+            </div>
+          </button>
+
+          {/* Warm Dark Theme Card */}
+          <button
+            type="button"
+            onClick={() => setDarkMode(true)}
+            className={`p-3.5 rounded-xl border text-left transition flex items-start gap-3 cursor-pointer ${
+              isDarkMode
+                ? 'border-[#14A89B] bg-[#2E2119] ring-2 ring-[#14A89B]/30 shadow-xs'
+                : 'border-slate-200 hover:border-slate-300 bg-white'
+            }`}
+          >
+            <div className="w-8 h-8 rounded-lg bg-[#211712] text-[#D98E3B] border border-[#3D2C20] flex items-center justify-center shrink-0 mt-0.5">
+              <Moon className="w-4 h-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-xs text-slate-900">Pasumai Café Warm Dark</span>
+                {isDarkMode && <Check className="w-4 h-4 text-[#14A89B]" />}
+              </div>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Rich walnut wood tones, soft café cream text, and brushed metallic accents.
+              </p>
+            </div>
+          </button>
+        </div>
+
+        {/* Café Palette Swatches */}
+        <div className="pt-2 border-t border-slate-100">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
+            Café Interior Palette Tokens
+          </span>
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+            <div className="flex items-center gap-2 p-1.5 rounded-lg bg-slate-50 border border-slate-200">
+              <span className="w-4 h-4 rounded-full border border-black/10 shrink-0" style={{ backgroundColor: '#211712' }} />
+              <div className="truncate">
+                <span className="text-[10px] font-bold block leading-none">Walnut Canvas</span>
+                <span className="text-[9px] font-mono text-slate-400">#211712</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 p-1.5 rounded-lg bg-slate-50 border border-slate-200">
+              <span className="w-4 h-4 rounded-full border border-black/10 shrink-0" style={{ backgroundColor: '#2E2119' }} />
+              <div className="truncate">
+                <span className="text-[10px] font-bold block leading-none">Wood Surface</span>
+                <span className="text-[9px] font-mono text-slate-400">#2E2119</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 p-1.5 rounded-lg bg-slate-50 border border-slate-200">
+              <span className="w-4 h-4 rounded-full border border-black/10 shrink-0" style={{ backgroundColor: '#14A89B' }} />
+              <div className="truncate">
+                <span className="text-[10px] font-bold block leading-none">Radiant Teal</span>
+                <span className="text-[9px] font-mono text-slate-400">#14A89B</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 p-1.5 rounded-lg bg-slate-50 border border-slate-200">
+              <span className="w-4 h-4 rounded-full border border-black/10 shrink-0" style={{ backgroundColor: '#D98E3B' }} />
+              <div className="truncate">
+                <span className="text-[10px] font-bold block leading-none">Copper Slat</span>
+                <span className="text-[9px] font-mono text-slate-400">#D98E3B</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 p-1.5 rounded-lg bg-slate-50 border border-slate-200">
+              <span className="w-4 h-4 rounded-full border border-black/10 shrink-0" style={{ backgroundColor: '#F5F0E6' }} />
+              <div className="truncate">
+                <span className="text-[10px] font-bold block leading-none">Cream Walls</span>
+                <span className="text-[9px] font-mono text-slate-400">#F5F0E6</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 p-1.5 rounded-lg bg-slate-50 border border-slate-200">
+              <span className="w-4 h-4 rounded-full border border-black/10 shrink-0" style={{ backgroundColor: '#B8A990' }} />
+              <div className="truncate">
+                <span className="text-[10px] font-bold block leading-none">Taupe Muted</span>
+                <span className="text-[9px] font-mono text-slate-400">#B8A990</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 p-1.5 rounded-lg bg-slate-50 border border-slate-200">
+              <span className="w-4 h-4 rounded-full border border-black/10 shrink-0" style={{ backgroundColor: '#C9C9C9' }} />
+              <div className="truncate">
+                <span className="text-[10px] font-bold block leading-none">Brushed Metal</span>
+                <span className="text-[9px] font-mono text-slate-400">#C9C9C9</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <form onSubmit={handleSave} className="space-y-5">

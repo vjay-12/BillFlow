@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Receipt, Search, Printer, Bluetooth } from 'lucide-react';
+import { Receipt, Search, Printer, Bluetooth, Moon, Sun } from 'lucide-react';
 import { SyncStatusBadge } from '../ui/SyncStatusBadge';
 import { PWAInstallButton } from '../ui/PWAInstallButton';
 import { useUIStore } from '../../stores/uiStore';
@@ -14,7 +14,7 @@ export const Header: React.FC<HeaderProps> = ({
   businessName = 'Pasumai Cafe',
   tagline = '100% organic food since 2012'
 }) => {
-  const { searchQuery, setSearchQuery, activeTab } = useUIStore();
+  const { searchQuery, setSearchQuery, activeTab, isDarkMode, toggleDarkMode } = useUIStore();
   const [btStatus, setBtStatus] = useState<string>('ready');
   const [currentTime, setCurrentTime] = useState<string>('');
 
@@ -51,7 +51,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight leading-tight">
+            <h1 className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight leading-tight cafe-metallic-text">
               {businessName}
             </h1>
             <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded">
@@ -101,6 +101,20 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Sync Badge */}
         <SyncStatusBadge />
+
+        {/* Quick Theme Toggle */}
+        <button
+          onClick={toggleDarkMode}
+          title={isDarkMode ? 'Switch to Crisp Daytime Light' : 'Switch to Pasumai Café Warm Dark'}
+          aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          className="p-1.5 sm:p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition cursor-pointer"
+        >
+          {isDarkMode ? (
+            <Sun className="w-4 h-4 text-[#D98E3B]" />
+          ) : (
+            <Moon className="w-4 h-4 text-slate-600" />
+          )}
+        </button>
 
         {/* Printer Quick Connect */}
         <button

@@ -39,9 +39,14 @@ interface UIState {
   setIsCustomerFormModalOpen: (open: boolean) => void;
   editingCustomer: Customer | null;
   setEditingCustomer: (customer: Customer | null) => void;
+
+  // Theme
+  isDarkMode: boolean;
+  setDarkMode: (enabled: boolean) => void;
+  toggleDarkMode: () => void;
 }
 
-export const useUIStore = create<UIState>((set) => ({
+export const useUIStore = create<UIState>((set, get) => ({
   activeTab: 'billing',
   setActiveTab: (activeTab) => set({ activeTab }),
 
@@ -78,4 +83,42 @@ export const useUIStore = create<UIState>((set) => ({
   setIsCustomerFormModalOpen: (isCustomerFormModalOpen) => set({ isCustomerFormModalOpen }),
   editingCustomer: null,
   setEditingCustomer: (editingCustomer) => set({ editingCustomer }),
+
+  isDarkMode: (() => {
+    if (typeof window === 'undefined') return false;
+    const stored = localStorage.getItem('billflow_theme');
+    const isDark = stored === 'dark';
+    if (isDark && typeof document !== 'undefined') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+    return isDark;
+  })(),
+  setDarkMode: (enabled: boolean) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('billflow_theme', enabled ? 'dark' : 'light');
+      if (enabled) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    }
+    set({ isDarkMode: enabled });
+  },
+  toggleDarkMode: () => {
+    const next = !get().isDarkMode;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('billflow_theme', next ? 'dark' : 'light');
+      if (next) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    }
+    set({ isDarkMode: next });
+  },
 }));
