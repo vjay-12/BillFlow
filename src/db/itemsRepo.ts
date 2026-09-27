@@ -42,12 +42,4 @@ export const itemsRepo = {
   async toggleActive(id: string, currentActive: boolean): Promise<void> {
     await this.update(id, { active: !currentActive });
   },
-
-  async deductStock(_lines: { itemId: string; qty: number }[]): Promise<void> {
-    // Stock-tracking removed for simplified cafe kitchen billing
-  },
-
-  async restoreStock(_lines: { itemId: string; qty: number }[]): Promise<void> {
-    // Stock-tracking removed for simplified cafe kitchen billing
-  },
 };

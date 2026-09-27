@@ -1,6 +1,5 @@
 import { db } from './schema';
 import type { Bill, PaymentMode } from '../types';
-import { itemsRepo } from './itemsRepo';
 
 export const billsRepo = {
   async getNextBillNo(): Promise<number> {
@@ -18,9 +17,6 @@ export const billsRepo = {
 
   async create(bill: Bill): Promise<string> {
     await db.bills.add(bill);
-
-    // Deduct stock if stock tracking enabled
-    await itemsRepo.deductStock(bill.lines);
 
     // If customer assigned, update loyalty points (+1 point per 50 currency)
     if (bill.customerId) {
@@ -60,9 +56,6 @@ export const billsRepo = {
       cancelReason: reason,
       synced: false,
     });
-
-    // Revert inventory
-    await itemsRepo.restoreStock(bill.lines);
 
     // Revert customer credit if needed
     if (bill.customerId && bill.paymentMode === 'Credit') {
