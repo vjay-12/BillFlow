@@ -4,7 +4,7 @@ import { StickyCartBar } from '../components/billing/StickyCartBar';
 
 export const BillRoute: React.FC = () => {
   return (
-    <div id="bill-route-container" className="flex-1 flex flex-col lg:flex-row h-full lg:h-[calc(100vh-100px)] overflow-y-auto lg:overflow-hidden relative scroll-smooth">
+    <div id="bill-route-container" className="flex-1 flex flex-col lg:flex-row h-full lg:h-[calc(100vh-100px)] overflow-y-auto lg:overflow-hidden relative">
       {/* Left side (Desktop) / Top section (Mobile): Item Catalog Grid */}
       <div className="w-full lg:flex-1 lg:h-full lg:overflow-hidden flex flex-col bg-slate-50 shrink-0 lg:shrink">
         <ItemGrid />

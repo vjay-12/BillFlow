@@ -78,8 +78,6 @@ export const ItemGrid: React.FC = () => {
   };
 
   const handleCardClick = (item: any) => {
-    const isFirstItem = cartLines.length === 0;
-
     if (item.price === 0) {
       const entered = prompt(`Set price for "${item.name}" (₹):`, '50');
       if (entered === null) return;
@@ -88,16 +86,6 @@ export const ItemGrid: React.FC = () => {
       addItem({ ...item, price: customPrice });
     } else {
       addItem(item);
-    }
-
-    // Auto-scroll on mobile only on the first item added to a new/empty order
-    if (isFirstItem && typeof window !== 'undefined' && window.innerWidth < 1024) {
-      setTimeout(() => {
-        const cartSection = document.getElementById('cart-checkout-section');
-        if (cartSection) {
-          cartSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 100);
     }
   };
 

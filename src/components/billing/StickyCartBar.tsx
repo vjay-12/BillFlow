@@ -38,8 +38,14 @@ export const StickyCartBar: React.FC = () => {
 
   const handleScrollToCart = () => {
     const cartSection = document.getElementById('cart-checkout-section');
-    if (cartSection) {
-      cartSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const scrollContainer = document.getElementById('bill-route-container');
+    if (cartSection && scrollContainer) {
+      const containerRect = scrollContainer.getBoundingClientRect();
+      const cartRect = cartSection.getBoundingClientRect();
+      const targetScroll = scrollContainer.scrollTop + (cartRect.top - containerRect.top);
+      scrollContainer.scrollTo({ top: targetScroll, behavior: 'auto' });
+    } else if (cartSection) {
+      cartSection.scrollIntoView({ behavior: 'auto', block: 'start' });
     }
   };
 

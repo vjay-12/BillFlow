@@ -13,15 +13,13 @@ import { useCartStore } from '../../stores/cartStore';
 import { formatCurrency, formatDateTime } from '../../lib/formatters';
 import { bluetoothPrinter } from '../../printing/bluetoothPrinter';
 import { db, INITIAL_BUSINESS_PROFILE } from '../../db/schema';
-import { shareReceiptPdf } from '../../lib/pdfReceipt';
+import { buildWhatsAppReceiptUrl } from '../../lib/formatWhatsAppMessage';
 import type { BusinessProfile } from '../../types';
 
 export const ReceiptModal: React.FC = () => {
   const { isReceiptModalOpen, setIsReceiptModalOpen, activeBillForReceipt } = useUIStore();
   const [paperWidth, setPaperWidth] = useState<'58mm' | '80mm'>('80mm');
   const [isPrintingBt, setIsPrintingBt] = useState(false);
-  const [isSharingPdf, setIsSharingPdf] = useState(false);
-  const [shareStatus, setShareStatus] = useState<string | null>(null);
   const [copiedSummary, setCopiedSummary] = useState(false);
 
   const dbProfile = useLiveQuery(async () => {
@@ -56,17 +54,24 @@ export const ReceiptModal: React.FC = () => {
     }
   };
 
-  const handleShareWhatsAppPdf = async () => {
-    try {
-      setIsSharingPdf(true);
-      const res = await shareReceiptPdf(bill, profile, isGstEnabled);
-      if (res.method === 'download' && res.message) {
-        setShareStatus(res.message);
-        setTimeout(() => setShareStatus(null), 4000);
+  const handleSendWhatsAppText = () => {
+    let phone = bill.customerPhone?.trim() || '';
+    if (!phone) {
+      const input = window.prompt(
+        'Enter customer 10-digit mobile number for WhatsApp receipt:',
+        ''
+      );
+      if (!input) return;
+      const digits = input.replace(/\D/g, '');
+      if (digits.length < 10) {
+        alert('Please enter a valid 10-digit mobile number.');
+        return;
       }
-    } finally {
-      setIsSharingPdf(false);
+      phone = digits;
     }
+
+    const waUrl = buildWhatsAppReceiptUrl(phone, bill, profile, isGstEnabled);
+    window.open(waUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleCopyText = () => {
@@ -258,31 +263,35 @@ export const ReceiptModal: React.FC = () => {
           </div>
 
           {/* Recipient Context Notice */}
-          {(bill.customerName || bill.customerPhone) && (
-            <div className="text-[11px] text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200/80 flex items-center justify-between">
-              <span className="truncate">
-                Sending to: <strong className="font-bold">{bill.customerName || 'Customer'}</strong> {bill.customerPhone ? `(${bill.customerPhone})` : ''}
-              </span>
-              <span className="text-[10px] text-emerald-700 font-bold shrink-0 ml-2">PDF File</span>
-            </div>
-          )}
-
-          {/* Fallback download / share status message */}
-          {shareStatus && (
-            <div className="text-center text-xs font-semibold text-emerald-800 bg-emerald-50 py-1.5 px-3 rounded-xl border border-emerald-200 animate-in fade-in">
-              {shareStatus}
-            </div>
-          )}
+          <div className="text-[11px] text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200/80 flex items-center justify-between">
+            <span className="truncate">
+              {bill.customerPhone ? (
+                <>
+                  Sending to: <strong className="font-bold">{bill.customerName || 'Customer'}</strong> (+91 {bill.customerPhone})
+                </>
+              ) : (
+                <span className="text-slate-600">
+                  No phone attached — will prompt on tap
+                </span>
+              )}
+            </span>
+            <span className="text-[10px] text-emerald-700 font-bold shrink-0 ml-2">
+              WhatsApp Text
+            </span>
+          </div>
 
           <div className="grid grid-cols-3 gap-2 pt-1">
             <button
-              onClick={handleShareWhatsAppPdf}
-              disabled={isSharingPdf}
+              onClick={handleSendWhatsAppText}
               className="py-2 px-1.5 sm:px-2 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 active:bg-emerald-200 font-bold text-xs flex items-center justify-center gap-1 transition min-w-0 cursor-pointer"
-              title="Share receipt as PDF via WhatsApp"
+              title={
+                bill.customerPhone
+                  ? `Send formatted text receipt to ${bill.customerPhone} on WhatsApp`
+                  : 'Prompt for phone number and send text receipt via WhatsApp'
+              }
             >
               <Smartphone className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span className="whitespace-nowrap">{isSharingPdf ? 'Preparing...' : 'WhatsApp PDF'}</span>
+              <span className="whitespace-nowrap">Send via WhatsApp</span>
             </button>
 
             <button
