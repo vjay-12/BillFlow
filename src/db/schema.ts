@@ -236,12 +236,19 @@ export async function seedInitialDataIfNeeded() {
       await db.customers.bulkPut(INITIAL_CUSTOMERS);
       await db.businessProfile.put({ ...INITIAL_BUSINESS_PROFILE, id: 'main' } as any);
       await db.bills.bulkPut(SAMPLE_BILLS);
+      localStorage.setItem('billflow_setup_complete', 'true');
       return;
     }
 
     const itemsCount = await db.items.count();
     if (itemsCount === 0) {
+      if (localStorage.getItem('billflow_setup_complete') === 'true') {
+        console.warn(
+          '⚠️ [BillFlow SafetyNet] Menu items storage was unexpectedly empty! Auto-restoring 59 canonical items transparently...'
+        );
+      }
       await db.items.bulkPut(INITIAL_ITEMS);
+      localStorage.setItem('billflow_setup_complete', 'true');
     }
 
     const custCount = await db.customers.count();
@@ -253,6 +260,8 @@ export async function seedInitialDataIfNeeded() {
     if (billsCount === 0) {
       await db.bills.bulkPut(SAMPLE_BILLS);
     }
+
+    localStorage.setItem('billflow_setup_complete', 'true');
   } finally {
     isSeeding = false;
   }

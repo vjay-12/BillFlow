@@ -5,14 +5,22 @@ import {
   Printer, 
   Bluetooth, 
   Save, 
-  Database, 
   RotateCcw, 
   CheckCircle,
   Download,
+  Upload,
   Receipt,
-  Check
+  Check,
+  ShieldCheck,
+  AlertCircle
 } from 'lucide-react';
-import { db, INITIAL_BUSINESS_PROFILE, seedInitialDataIfNeeded } from '../db/schema';
+import { db, INITIAL_BUSINESS_PROFILE } from '../db/schema';
+import { 
+  downloadBackupFile, 
+  restoreFromBackupFile, 
+  restoreDefaultMenu,
+  CANONICAL_BACKUP 
+} from '../db/dataSafety';
 import { bluetoothPrinter } from '../printing/bluetoothPrinter';
 import { useCartStore } from '../stores/cartStore';
 import type { BusinessProfile } from '../types';
@@ -26,11 +34,20 @@ export const SettingsRoute: React.FC = () => {
   const [prevRecord, setPrevRecord] = useState(profileRecord);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [btStatus, setBtStatus] = useState<string>('Disconnected');
+  const [safetyFeedback, setSafetyFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [isOperating, setIsOperating] = useState(false);
 
   if (profileRecord && profileRecord !== prevRecord) {
     setPrevRecord(profileRecord);
     setProfile(profileRecord);
   }
+
+  const showFeedback = (type: 'success' | 'error', message: string) => {
+    setSafetyFeedback({ type, message });
+    setTimeout(() => {
+      setSafetyFeedback((current) => (current?.message === message ? null : current));
+    }, 4000);
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,40 +75,67 @@ export const SettingsRoute: React.FC = () => {
     window.print();
   };
 
-  const handleExportBackup = async () => {
-    const items = await db.items.toArray();
-    const bills = await db.bills.toArray();
-    const customers = await db.customers.toArray();
-
-    const data = {
-      profile,
-      items,
-      bills,
-      customers,
-      exportedAt: new Date().toISOString(),
-    };
-
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `billflow-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+  // 1. Download Backup Now
+  const handleDownloadBackup = async () => {
+    try {
+      setIsOperating(true);
+      const res = await downloadBackupFile();
+      showFeedback('success', `Backup downloaded: ${res.filename} (${res.itemCount} items)`);
+    } catch (err: any) {
+      showFeedback('error', err?.message || 'Download failed');
+    } finally {
+      setIsOperating(false);
+    }
   };
 
-  const handleResetData = async () => {
-    if (confirm('Are you sure you want to reset all data and re-seed sample items?')) {
-      await db.items.clear();
-      await db.bills.clear();
-      await db.customers.clear();
-      await seedInitialDataIfNeeded();
-      alert('Sample data reloaded successfully!');
+  // 2. Restore from File
+  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!confirm(`Restore backup from "${file.name}"? This will replace current items, bills, and customers with the backup data.`)) {
+      e.target.value = '';
+      return;
+    }
+
+    try {
+      setIsOperating(true);
+      const text = await file.text();
+      const res = await restoreFromBackupFile(text);
+      
+      // Update local profile state
+      const updatedProfile = await db.businessProfile.get('main');
+      if (updatedProfile) setProfile(updatedProfile);
+
+      showFeedback('success', res.message);
+    } catch (err: any) {
+      showFeedback('error', err?.message || 'Failed to restore file');
+    } finally {
+      setIsOperating(false);
+      e.target.value = '';
+    }
+  };
+
+  // 3. Restore Default Menu (Emergency Reset)
+  const handleRestoreDefaultMenu = async () => {
+    if (!confirm('Emergency Reset: Restore original 59-item Pasumai Cafe menu and default settings?')) {
+      return;
+    }
+
+    try {
+      setIsOperating(true);
+      const res = await restoreDefaultMenu();
+      setProfile(CANONICAL_BACKUP.profile);
+      showFeedback('success', res.message);
+    } catch (err: any) {
+      showFeedback('error', err?.message || 'Emergency restore failed');
+    } finally {
+      setIsOperating(false);
     }
   };
 
   return (
-    <div className="flex-1 p-4 lg:p-6 pb-20 md:pb-6 overflow-y-auto max-w-4xl mx-auto w-full space-y-5">
+    <div className="flex-1 p-4 lg:p-6 pb-28 md:pb-8 overflow-y-auto max-w-4xl mx-auto w-full space-y-5">
       {/* Top Title */}
       <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
         <div>
@@ -338,32 +382,87 @@ export const SettingsRoute: React.FC = () => {
         </div>
       </form>
 
-      {/* Database & Backup Actions */}
-      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-3">
-        <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-          <Database className="w-5 h-5 text-slate-600" />
-          <h3 className="font-bold text-slate-800 text-sm">Local Storage & Data Tools</h3>
+      {/* Backup & Restore Safety Net */}
+      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-teal-700" />
+            <div>
+              <h3 className="font-bold text-slate-800 text-sm">Backup & Restore</h3>
+              <p className="text-[11px] text-slate-500">
+                Guaranteed data safety net: export local backups, restore previous files, or instant emergency menu reset
+              </p>
+            </div>
+          </div>
+
+          <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+            59 Canonical Items Ready
+          </span>
         </div>
 
-        <p className="text-xs text-slate-500">
-          BillFlow stores all records in browser IndexedDB for offline-first reliability. You can export a JSON backup anytime or reload sample menu items.
-        </p>
-
-        <div className="flex flex-wrap items-center gap-2 pt-1">
-          <button
-            onClick={handleExportBackup}
-            className="flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition"
+        {safetyFeedback && (
+          <div
+            className={`p-3 rounded-xl text-xs font-bold flex items-center justify-between gap-2 animate-in fade-in transition ${
+              safetyFeedback.type === 'success'
+                ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
+                : 'bg-rose-50 text-rose-900 border border-rose-200'
+            }`}
           >
-            <Download className="w-4 h-4" />
-            <span>Export JSON Backup</span>
+            <div className="flex items-center gap-2">
+              {safetyFeedback.type === 'success' ? (
+                <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+              ) : (
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              )}
+              <span>{safetyFeedback.message}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSafetyFeedback(null)}
+              className="text-slate-400 hover:text-slate-600 cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+          {/* Action A: Download Backup Now */}
+          <button
+            type="button"
+            disabled={isOperating}
+            onClick={handleDownloadBackup}
+            className="flex flex-col items-center justify-center gap-1.5 p-3.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 active:bg-slate-200 text-slate-700 transition cursor-pointer text-center group"
+          >
+            <Download className="w-5 h-5 text-teal-700 group-hover:scale-110 transition-transform" />
+            <span className="font-bold text-xs">Download Backup Now</span>
+            <span className="text-[10px] text-slate-400">Save full state as JSON</span>
           </button>
 
+          {/* Action B: Restore from File */}
+          <label className="flex flex-col items-center justify-center gap-1.5 p-3.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 active:bg-slate-200 text-slate-700 transition cursor-pointer text-center group relative">
+            <Upload className="w-5 h-5 text-indigo-700 group-hover:scale-110 transition-transform" />
+            <span className="font-bold text-xs">Restore from File</span>
+            <span className="text-[10px] text-slate-400">Upload previous backup JSON</span>
+            <input
+              type="file"
+              accept=".json,application/json"
+              onChange={handleFileSelected}
+              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+            />
+          </label>
+
+          {/* Action C: Restore Default Menu */}
           <button
-            onClick={handleResetData}
-            className="flex items-center gap-1.5 px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold border border-rose-200 transition"
+            type="button"
+            disabled={isOperating}
+            onClick={handleRestoreDefaultMenu}
+            className="flex flex-col items-center justify-center gap-1.5 p-3.5 rounded-xl border border-amber-300 bg-amber-50/80 hover:bg-amber-100 active:bg-amber-200 text-amber-900 transition cursor-pointer text-center group"
+            title="Emergency reset to original 59 Pasumai Cafe items"
           >
-            <RotateCcw className="w-4 h-4" />
-            <span>Reload Sample Menu & Bills</span>
+            <RotateCcw className="w-5 h-5 text-amber-700 group-hover:-rotate-90 transition-transform duration-200" />
+            <span className="font-bold text-xs">Restore Default Menu</span>
+            <span className="text-[10px] text-amber-700/80">Emergency reset (59 items)</span>
           </button>
         </div>
       </div>

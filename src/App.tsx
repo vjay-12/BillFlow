@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, seedInitialDataIfNeeded } from './db/schema';
+import { checkAndAutoRestore } from './db/dataSafety';
 import { Header } from './components/nav/Header';
 import { Navigation } from './components/nav/Navigation';
 import { BillRoute } from './routes/Bill';
@@ -33,9 +34,11 @@ export function App() {
     }
   }, [profile?.enableGst]);
 
-  // Initialize seed database on app mount
+  // Initialize seed database & check auto-restore safety net on app mount
   useEffect(() => {
-    seedInitialDataIfNeeded().catch(console.error);
+    checkAndAutoRestore()
+      .then(() => seedInitialDataIfNeeded())
+      .catch(console.error);
   }, []);
 
   // Global POS Keyboard Shortcuts
