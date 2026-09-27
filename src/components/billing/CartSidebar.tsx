@@ -26,6 +26,7 @@ export const CartSidebar: React.FC = () => {
     customer,
     discountType,
     discountValue,
+    isGstEnabled,
     incrementQty,
     decrementQty,
     updateNote,
@@ -330,10 +331,12 @@ export const CartSidebar: React.FC = () => {
             </div>
           )}
 
-          <div className="flex justify-between">
-            <span className="text-slate-500">Taxes (GST)</span>
-            <span className="font-mono font-medium">{formatCurrency(taxAmount)}</span>
-          </div>
+          {isGstEnabled && taxAmount > 0 && (
+            <div className="flex justify-between">
+              <span className="text-slate-500">GST</span>
+              <span className="font-mono font-medium">{formatCurrency(taxAmount)}</span>
+            </div>
+          )}
 
           <div className="flex justify-between text-base font-extrabold text-slate-900 pt-1.5 border-t border-slate-200">
             <span>Payable Total</span>
@@ -352,12 +355,12 @@ export const CartSidebar: React.FC = () => {
           }`}
         >
           <div className="flex items-center gap-2">
-            <span>Pay / Checkout</span>
+            <span>Proceed to Payment</span>
             <span className="text-xs bg-teal-800/80 px-2 py-0.5 rounded-full font-mono">
-              {itemsCount} items
+              {itemsCount} {itemsCount === 1 ? 'item' : 'items'}
             </span>
           </div>
-          <div className="flex items-center gap-1 font-mono text-base">
+          <div className="flex items-center gap-1 font-mono text-base font-bold">
             <span>{formatCurrency(total)}</span>
             <ChevronRight className="w-4 h-4 stroke-[3]" />
           </div>

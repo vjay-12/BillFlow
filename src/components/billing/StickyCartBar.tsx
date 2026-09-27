@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ShoppingBag, ChevronRight } from 'lucide-react';
 import { useCartStore } from '../../stores/cartStore';
 import { formatCurrency } from '../../lib/formatters';
@@ -6,8 +6,35 @@ import { formatCurrency } from '../../lib/formatters';
 export const StickyCartBar: React.FC = () => {
   const itemsCount = useCartStore((s) => s.getTotalItemsCount());
   const total = useCartStore((s) => s.getTotal());
+  const [isCartInView, setIsCartInView] = useState(false);
 
-  if (itemsCount === 0) return null;
+  useEffect(() => {
+    const cartSection = document.getElementById('cart-checkout-section');
+    const scrollContainer = document.getElementById('bill-route-container');
+    if (!cartSection) return;
+
+    const checkVisibility = () => {
+      const rect = cartSection.getBoundingClientRect();
+      // Hide sticky bar when cart section is scrolled into view
+      const inView = rect.top < window.innerHeight - 80 && rect.bottom > 80;
+      setIsCartInView(inView);
+    };
+
+    checkVisibility();
+
+    const target = scrollContainer || window;
+    target.addEventListener('scroll', checkVisibility, { passive: true });
+    window.addEventListener('resize', checkVisibility, { passive: true });
+
+    return () => {
+      target.removeEventListener('scroll', checkVisibility);
+      window.removeEventListener('resize', checkVisibility);
+    };
+  }, []);
+
+  // When cart is empty or when the user is already looking at the cart/bill section,
+  // hide the sticky bar so only the single "Proceed to Payment" button is visible
+  if (itemsCount === 0 || isCartInView) return null;
 
   const handleScrollToCart = () => {
     const cartSection = document.getElementById('cart-checkout-section');
@@ -18,7 +45,7 @@ export const StickyCartBar: React.FC = () => {
 
   return (
     <div
-      className="md:hidden fixed left-3 right-3 z-30 transition-all duration-200 ease-out animate-in slide-in-from-bottom-5"
+      className="md:hidden fixed left-3 right-3 z-30 transition-all duration-300 ease-out animate-in slide-in-from-bottom-5"
       style={{ bottom: 'calc(56px + max(8px, env(safe-area-inset-bottom)))' }}
     >
       <button
@@ -43,7 +70,7 @@ export const StickyCartBar: React.FC = () => {
               </span>
             </div>
             <div className="text-[10.5px] text-teal-200/90 font-medium mt-0.5 truncate">
-              Tap to view order & checkout
+              Tap to review bill
             </div>
           </div>
         </div>

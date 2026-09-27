@@ -9,10 +9,18 @@ import {
   Share2
 } from 'lucide-react';
 import { db } from '../../db/schema';
+import { useCartStore } from '../../stores/cartStore';
 import { formatCurrency } from '../../lib/formatters';
 
 export const ReportsDashboard: React.FC = () => {
   const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'all'>('all');
+
+  const profile = useLiveQuery(async () => {
+    return await db.businessProfile.get('main');
+  }, []);
+
+  const isCartGstEnabled = useCartStore((s) => s.isGstEnabled);
+  const isGstEnabled = isCartGstEnabled && profile?.enableGst !== false;
 
   const bills = useLiveQuery(async () => {
     const all = await db.bills.toArray();
@@ -95,7 +103,7 @@ export const ReportsDashboard: React.FC = () => {
       ['Report Period', timeFilter.toUpperCase()],
       ['Total Orders', stats.ordersCount.toString()],
       ['Total Revenue', stats.totalRevenue.toString()],
-      ['Total Tax Collected', stats.totalTax.toString()],
+      ...(isGstEnabled && stats.totalTax > 0 ? [['Total GST Collected', stats.totalTax.toString()]] : []),
       ['Total Discounts', stats.totalDiscount.toString()],
       ['Average Order Value', stats.avgOrderValue.toString()],
       [''],
@@ -113,7 +121,8 @@ export const ReportsDashboard: React.FC = () => {
   };
 
   const handleShareReport = () => {
-    const text = `*Pasumai Cafe - Sales Summary (${timeFilter.toUpperCase()})*\nOrders: ${stats.ordersCount}\nRevenue: ${formatCurrency(stats.totalRevenue)}\nTax: ${formatCurrency(stats.totalTax)}\nTop Dish: ${stats.topItems[0] ? `${stats.topItems[0].name} (${stats.topItems[0].qty} sold)` : 'None'}`;
+    const gstLine = isGstEnabled && stats.totalTax > 0 ? `\nGST: ${formatCurrency(stats.totalTax)}` : '';
+    const text = `*Pasumai Cafe - Sales Summary (${timeFilter.toUpperCase()})*\nOrders: ${stats.ordersCount}\nRevenue: ${formatCurrency(stats.totalRevenue)}${gstLine}\nTop Dish: ${stats.topItems[0] ? `${stats.topItems[0].name} (${stats.topItems[0].qty} sold)` : 'None'}`;
     const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(waUrl, '_blank');
   };
@@ -197,9 +206,15 @@ export const ReportsDashboard: React.FC = () => {
           <div className="text-2xl lg:text-3xl font-extrabold font-mono tracking-tight mt-2">
             {formatCurrency(stats.totalRevenue)}
           </div>
-          <div className="text-[11px] text-teal-200/80 mt-1">
-            Tax Collected: {formatCurrency(stats.totalTax)}
-          </div>
+          {isGstEnabled && stats.totalTax > 0 ? (
+            <div className="text-[11px] text-teal-200/80 mt-1">
+              GST Collected: {formatCurrency(stats.totalTax)}
+            </div>
+          ) : (
+            <div className="text-[11px] text-teal-200/80 mt-1">
+              {stats.ordersCount} settled transactions
+            </div>
+          )}
         </div>
 
         {/* Orders Count */}

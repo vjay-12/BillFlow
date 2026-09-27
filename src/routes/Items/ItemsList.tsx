@@ -51,6 +51,8 @@ export const ItemsList: React.FC = () => {
     return preferred;
   }, [allItemsForCategories]);
 
+  const [itemToArchive, setItemToArchive] = useState<Item | null>(null);
+
   const handleEdit = (item: Item) => {
     setEditingItem(item);
     setIsItemFormModalOpen(true);
@@ -62,7 +64,17 @@ export const ItemsList: React.FC = () => {
   };
 
   const handleToggleArchive = async (item: Item) => {
-    await itemsRepo.toggleActive(item.id, item.active);
+    if (item.active) {
+      setItemToArchive(item);
+    } else {
+      await itemsRepo.toggleActive(item.id, false);
+    }
+  };
+
+  const confirmArchive = async () => {
+    if (!itemToArchive) return;
+    await itemsRepo.toggleActive(itemToArchive.id, true);
+    setItemToArchive(null);
   };
 
   return (
@@ -325,6 +337,43 @@ export const ItemsList: React.FC = () => {
         </div>
       )}
 
+      {/* Archive Confirmation Modal */}
+      {itemToArchive && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-5 border border-slate-200 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 border border-amber-200">
+                <Archive className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-extrabold text-slate-900 text-sm">
+                  Archive {itemToArchive.name}?
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  It will be hidden from billing but kept in past records.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setItemToArchive(null)}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 font-bold text-xs transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmArchive}
+                className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+              >
+                Archive
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

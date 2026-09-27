@@ -122,7 +122,7 @@ export function buildEscPosReceipt(bill: Bill, profile: BusinessProfile): Uint8A
   if (profile.phone) {
     builder.line(`Tel: ${profile.phone}`);
   }
-  if (profile.gstin) {
+  if (profile.gstin && profile.enableGst !== false) {
     builder.line(`GSTIN: ${profile.gstin}`);
   }
   if (profile.fssai) {
@@ -165,8 +165,8 @@ export function buildEscPosReceipt(bill: Bill, profile: BusinessProfile): Uint8A
   if (bill.discount > 0) {
     builder.twoColumnRow('Discount:', `-${cur} ${bill.discount.toFixed(2)}`);
   }
-  if (bill.tax > 0) {
-    builder.twoColumnRow('Tax (GST):', `${cur} ${bill.tax.toFixed(2)}`);
+  if (bill.tax > 0 && profile.enableGst !== false) {
+    builder.twoColumnRow('GST:', `${cur} ${bill.tax.toFixed(2)}`);
   }
   builder.divider('=');
 

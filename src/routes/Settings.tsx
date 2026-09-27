@@ -132,7 +132,7 @@ export const SettingsRoute: React.FC = () => {
                 : 'bg-slate-100 text-slate-600 border border-slate-200'
             }`}
           >
-            {profile.enableGst !== false ? 'GST Enabled' : 'GST Disabled (₹0 Tax)'}
+            {profile.enableGst !== false ? 'GST Enabled' : 'GST Disabled'}
           </span>
         </div>
 
@@ -141,7 +141,7 @@ export const SettingsRoute: React.FC = () => {
           <div className="space-y-1 max-w-xl">
             <span className="font-bold text-slate-900 text-sm">GST Calculation</span>
             <p className="text-xs text-slate-600 leading-relaxed">
-              When enabled, item GST rates apply during checkout and display on receipts. When disabled, tax is ₹0 across the entire app (checkout, receipts, and reports show GST: ₹0).
+              When enabled, item GST rates apply during checkout and display on receipts. When disabled, tax is ₹0 and tax lines are completely removed across checkout, receipts, bill details, and reports.
             </p>
           </div>
 

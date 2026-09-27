@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { 
   Printer, 
   Bluetooth, 
@@ -8,22 +9,34 @@ import {
   Smartphone
 } from 'lucide-react';
 import { useUIStore } from '../../stores/uiStore';
+import { useCartStore } from '../../stores/cartStore';
 import { formatCurrency, formatDateTime } from '../../lib/formatters';
 import { bluetoothPrinter } from '../../printing/bluetoothPrinter';
-import { INITIAL_BUSINESS_PROFILE } from '../../db/schema';
+import { db, INITIAL_BUSINESS_PROFILE } from '../../db/schema';
+import { shareReceiptPdf } from '../../lib/pdfReceipt';
 import type { BusinessProfile } from '../../types';
 
 export const ReceiptModal: React.FC = () => {
   const { isReceiptModalOpen, setIsReceiptModalOpen, activeBillForReceipt } = useUIStore();
   const [paperWidth, setPaperWidth] = useState<'58mm' | '80mm'>('80mm');
   const [isPrintingBt, setIsPrintingBt] = useState(false);
+  const [isSharingPdf, setIsSharingPdf] = useState(false);
+  const [shareStatus, setShareStatus] = useState<string | null>(null);
   const [copiedSummary, setCopiedSummary] = useState(false);
+
+  const dbProfile = useLiveQuery(async () => {
+    return await db.businessProfile.get('main');
+  }, []);
+
+  const isCartGstEnabled = useCartStore((s) => s.isGstEnabled);
+  const isGstEnabled = isCartGstEnabled && dbProfile?.enableGst !== false;
 
   if (!isReceiptModalOpen || !activeBillForReceipt) return null;
 
   const bill = activeBillForReceipt;
   const profile: BusinessProfile = {
     ...INITIAL_BUSINESS_PROFILE,
+    ...dbProfile,
     paperWidth,
   };
 
@@ -43,16 +56,17 @@ export const ReceiptModal: React.FC = () => {
     }
   };
 
-  const handleShareWhatsApp = () => {
-    const text = encodeURIComponent(
-      `🧾 *${profile.name}*\n` +
-      `Bill #${bill.billNo} • ${bill.orderType}\n` +
-      `Date: ${formatDateTime(bill.timestamp)}\n` +
-      `Total: ${formatCurrency(bill.total)}\n` +
-      `Paid via: ${bill.paymentMode}\n\n` +
-      `Thank you for visiting!`
-    );
-    window.open(`https://wa.me/?text=${text}`, '_blank');
+  const handleShareWhatsAppPdf = async () => {
+    try {
+      setIsSharingPdf(true);
+      const res = await shareReceiptPdf(bill, profile, isGstEnabled);
+      if (res.method === 'download' && res.message) {
+        setShareStatus(res.message);
+        setTimeout(() => setShareStatus(null), 4000);
+      }
+    } finally {
+      setIsSharingPdf(false);
+    }
   };
 
   const handleCopyText = () => {
@@ -117,7 +131,7 @@ export const ReceiptModal: React.FC = () => {
               {profile.tagline && <p className="text-[10px] text-slate-600">{profile.tagline}</p>}
               {profile.address && <p className="text-[10px] text-slate-500 leading-tight">{profile.address}</p>}
               {profile.phone && <p className="text-[10px] font-semibold text-slate-700">Tel: {profile.phone}</p>}
-              {profile.gstin && <p className="text-[9px] text-slate-500">GSTIN: {profile.gstin}</p>}
+              {isGstEnabled && profile.gstin && <p className="text-[9px] text-slate-500">GSTIN: {profile.gstin}</p>}
               {profile.fssai && <p className="text-[9px] text-slate-500">FSSAI: {profile.fssai}</p>}
             </div>
 
@@ -187,15 +201,10 @@ export const ReceiptModal: React.FC = () => {
                   <span className="font-mono">-{bill.discount.toFixed(2)}</span>
                 </div>
               )}
-              {bill.tax > 0 ? (
+              {isGstEnabled && bill.tax > 0 && (
                 <div className="flex justify-between text-slate-600">
-                  <span>Taxes (GST)</span>
-                  <span className="font-mono">{bill.tax.toFixed(2)}</span>
-                </div>
-              ) : (
-                <div className="flex justify-between text-slate-500">
                   <span>GST</span>
-                  <span className="font-mono">₹0.00</span>
+                  <span className="font-mono">{bill.tax.toFixed(2)}</span>
                 </div>
               )}
 
@@ -248,13 +257,32 @@ export const ReceiptModal: React.FC = () => {
             </button>
           </div>
 
+          {/* Recipient Context Notice */}
+          {(bill.customerName || bill.customerPhone) && (
+            <div className="text-[11px] text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200/80 flex items-center justify-between">
+              <span className="truncate">
+                Sending to: <strong className="font-bold">{bill.customerName || 'Customer'}</strong> {bill.customerPhone ? `(${bill.customerPhone})` : ''}
+              </span>
+              <span className="text-[10px] text-emerald-700 font-bold shrink-0 ml-2">PDF File</span>
+            </div>
+          )}
+
+          {/* Fallback download / share status message */}
+          {shareStatus && (
+            <div className="text-center text-xs font-semibold text-emerald-800 bg-emerald-50 py-1.5 px-3 rounded-xl border border-emerald-200 animate-in fade-in">
+              {shareStatus}
+            </div>
+          )}
+
           <div className="grid grid-cols-3 gap-2 pt-1">
             <button
-              onClick={handleShareWhatsApp}
-              className="py-2 px-1.5 sm:px-2 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold text-xs flex items-center justify-center gap-1 transition min-w-0"
+              onClick={handleShareWhatsAppPdf}
+              disabled={isSharingPdf}
+              className="py-2 px-1.5 sm:px-2 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 active:bg-emerald-200 font-bold text-xs flex items-center justify-center gap-1 transition min-w-0 cursor-pointer"
+              title="Share receipt as PDF via WhatsApp"
             >
               <Smartphone className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span className="whitespace-nowrap">WhatsApp</span>
+              <span className="whitespace-nowrap">{isSharingPdf ? 'Preparing...' : 'WhatsApp PDF'}</span>
             </button>
 
             <button

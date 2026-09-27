@@ -19,6 +19,9 @@ import { formatCurrency, generateUPIPaymentUrl } from '../../lib/formatters';
 import type { PaymentMode, Bill } from '../../types';
 import { INITIAL_BUSINESS_PROFILE } from '../../db/schema';
 
+const generateBillId = () => `bill-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+const getCurrentTimestamp = () => Date.now();
+
 export const PaymentModal: React.FC = () => {
   const {
     isPaymentModalOpen,
@@ -46,12 +49,13 @@ export const PaymentModal: React.FC = () => {
   const tax = getTaxAmount();
 
   const [paymentMode, setPaymentMode] = useState<PaymentMode>('Cash');
-  const [tenderedCash, setTenderedCash] = useState<number>(total);
+  const [tenderedCashInput, setTenderedCashInput] = useState<number | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [copiedUPI, setCopiedUPI] = useState(false);
 
   if (!isPaymentModalOpen) return null;
 
+  const tenderedCash = tenderedCashInput !== null ? tenderedCashInput : total;
   const changeDue = Math.max(0, (tenderedCash || 0) - total);
   const isCashInsufficient = paymentMode === 'Cash' && (tenderedCash || 0) < total;
 
@@ -67,9 +71,9 @@ export const PaymentModal: React.FC = () => {
       const nextBillNo = await billsRepo.getNextBillNo();
 
       const newBill: Bill = {
-        id: `bill-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        id: generateBillId(),
         billNo: nextBillNo,
-        timestamp: Date.now(),
+        timestamp: getCurrentTimestamp(),
         lines: [...lines],
         subtotal,
         discount,
@@ -175,7 +179,7 @@ export const PaymentModal: React.FC = () => {
                   key={mode.id}
                   onClick={() => {
                     setPaymentMode(mode.id as PaymentMode);
-                    if (mode.id === 'Cash') setTenderedCash(total);
+                    if (mode.id === 'Cash') setTenderedCashInput(total);
                   }}
                   className={`p-3 rounded-xl flex flex-col items-center justify-center gap-1.5 border transition-all text-xs font-bold ${
                     isSelected
@@ -207,7 +211,7 @@ export const PaymentModal: React.FC = () => {
                     type="number"
                     min="0"
                     value={tenderedCash}
-                    onChange={(e) => setTenderedCash(Number(e.target.value))}
+                    onChange={(e) => setTenderedCashInput(Number(e.target.value))}
                     className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-slate-300 font-mono text-xl font-extrabold focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600"
                   />
                 </div>
@@ -221,7 +225,7 @@ export const PaymentModal: React.FC = () => {
                   </span>
                   <button
                     type="button"
-                    onClick={() => setTenderedCash(total)}
+                    onClick={() => setTenderedCashInput(total)}
                     className="px-2.5 py-1 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-lg text-xs font-bold border border-teal-200 transition cursor-pointer"
                   >
                     Exact: {formatCurrency(total)}
@@ -234,7 +238,7 @@ export const PaymentModal: React.FC = () => {
                       <button
                         key={amt}
                         type="button"
-                        onClick={() => setTenderedCash(amt)}
+                        onClick={() => setTenderedCashInput(amt)}
                         className={`py-2 rounded-xl text-xs font-extrabold font-mono transition border cursor-pointer text-center ${
                           isSelected
                             ? 'bg-teal-700 text-white border-teal-700 shadow-xs'

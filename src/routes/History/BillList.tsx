@@ -17,9 +17,11 @@ import {
   Clock,
   User
 } from 'lucide-react';
-import { db } from '../../db/schema';
+import { db, INITIAL_BUSINESS_PROFILE } from '../../db/schema';
 import { billsRepo } from '../../db/billsRepo';
 import { useUIStore } from '../../stores/uiStore';
+import { useCartStore } from '../../stores/cartStore';
+import { shareReceiptPdf } from '../../lib/pdfReceipt';
 import { formatCurrency, formatDateTime, formatShortDateTime } from '../../lib/formatters';
 import type { Bill, PaymentMode } from '../../types';
 
@@ -28,6 +30,15 @@ export const BillList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterMode, setFilterMode] = useState<'All' | PaymentMode>('All');
   const [selectedBillForDetail, setSelectedBillForDetail] = useState<Bill | null>(null);
+  const [isSharingPdf, setIsSharingPdf] = useState(false);
+  const [shareStatus, setShareStatus] = useState<string | null>(null);
+
+  const profile = useLiveQuery(async () => {
+    return await db.businessProfile.get('main');
+  }, []);
+
+  const isCartGstEnabled = useCartStore((s) => s.isGstEnabled);
+  const isGstEnabled = isCartGstEnabled && profile?.enableGst !== false;
 
   const bills = useLiveQuery(async () => {
     const all = await db.bills.orderBy('timestamp').reverse().toArray();
@@ -48,18 +59,21 @@ export const BillList: React.FC = () => {
     setIsReceiptModalOpen(true);
   };
 
-  const handleShareWhatsApp = (bill: Bill) => {
-    const itemsList = bill.lines
-      .map((l) => `• ${l.name} x${l.qty} - ${formatCurrency(l.qty * l.price)}`)
-      .join('\n');
-    const message = `*Pasumai Cafe - Bill #${bill.billNo}*\nDate: ${formatDateTime(bill.timestamp)}\nType: ${bill.orderType}${bill.table ? ` (${bill.table})` : ''}\n------------------\n${itemsList}\n------------------\nTotal: ${formatCurrency(bill.total)}\nStatus: ${bill.status}\n\nThank you for visiting!`;
-
-    const rawPhone = bill.customerPhone ? bill.customerPhone.replace(/[^0-9]/g, '') : '';
-    const phone = rawPhone.length === 10 ? `91${rawPhone}` : rawPhone;
-    const waUrl = phone
-      ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
-      : `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.open(waUrl, '_blank');
+  const handleSharePdf = async (bill: Bill) => {
+    try {
+      setIsSharingPdf(true);
+      const res = await shareReceiptPdf(
+        bill,
+        profile || INITIAL_BUSINESS_PROFILE,
+        isGstEnabled
+      );
+      if (res.method === 'download' && res.message) {
+        setShareStatus(res.message);
+        setTimeout(() => setShareStatus(null), 4000);
+      }
+    } finally {
+      setIsSharingPdf(false);
+    }
   };
 
   const handleCancel = async (bill: Bill) => {
@@ -458,10 +472,12 @@ export const BillList: React.FC = () => {
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between">
-                  <span>Tax (GST):</span>
-                  <span className="font-mono">{formatCurrency(selectedBillForDetail.tax)}</span>
-                </div>
+                {isGstEnabled && selectedBillForDetail.tax > 0 && (
+                  <div className="flex justify-between">
+                    <span>GST:</span>
+                    <span className="font-mono">{formatCurrency(selectedBillForDetail.tax)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between font-extrabold text-sm text-slate-900 pt-1 border-t border-slate-200">
                   <span>Net Total:</span>
                   <span className="font-mono text-teal-800">
@@ -473,6 +489,22 @@ export const BillList: React.FC = () => {
 
             {/* Bottom Actions on Detail Modal */}
             <div className="p-3.5 bg-slate-50 border-t border-slate-200 flex flex-col gap-2">
+              {/* Recipient Context */}
+              {(selectedBillForDetail.customerName || selectedBillForDetail.customerPhone) && (
+                <div className="text-[11px] text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200/80 flex items-center justify-between">
+                  <span className="truncate">
+                    Sending to: <strong className="font-bold">{selectedBillForDetail.customerName || 'Customer'}</strong> {selectedBillForDetail.customerPhone ? `(${selectedBillForDetail.customerPhone})` : ''}
+                  </span>
+                  <span className="text-[10px] text-emerald-700 font-bold shrink-0 ml-2">PDF File</span>
+                </div>
+              )}
+
+              {shareStatus && (
+                <div className="text-center text-xs font-semibold text-emerald-800 bg-emerald-50 py-1 px-2 rounded-lg border border-emerald-200 animate-in fade-in">
+                  {shareStatus}
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-2">
                 {/* Reprint button (always visible) */}
                 <button
@@ -483,13 +515,15 @@ export const BillList: React.FC = () => {
                   <span>Reprint</span>
                 </button>
 
-                {/* Share / WhatsApp button (always visible) */}
+                {/* Share PDF / WhatsApp button (always visible) */}
                 <button
-                  onClick={() => handleShareWhatsApp(selectedBillForDetail)}
-                  className="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition"
+                  onClick={() => handleSharePdf(selectedBillForDetail)}
+                  disabled={isSharingPdf}
+                  className="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition cursor-pointer"
+                  title="Share receipt as PDF via WhatsApp"
                 >
                   <Share2 className="w-3.5 h-3.5" />
-                  <span>Share / WhatsApp</span>
+                  <span>{isSharingPdf ? 'Preparing PDF...' : 'Share PDF (WhatsApp)'}</span>
                 </button>
               </div>
 
