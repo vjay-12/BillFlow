@@ -15,12 +15,13 @@ export function formatWhatsAppPhone(phone: string): string {
 }
 
 /**
- * Builds a beautifully formatted WhatsApp text receipt message.
- * - Uses Unicode box-drawing characters (┌─┐│└─┘ and ─) for the store header.
- * - Bold with asterisks on business name, NET TOTAL, and PAID/UNPAID status.
- * - Monospace fixed-width table (```) with dynamic space-padding for line items.
+ * Builds a clean, reliable WhatsApp text receipt message.
+ * - Bold business header using *asterisks* (no unreliable box-drawing characters).
+ * - Standard hyphen section dividers (----------------------------) that render cleanly on all devices.
+ * - Monospace fixed-width table (```) sized strictly to 28 characters to prevent mid-row line wrapping on mobile.
+ * - Bold NET TOTAL and PAID/UNPAID status.
  * - Strictly respects the GST visibility setting (omits tax line entirely when disabled).
- * - Closes with warm thank you note and italicized Powered by BillFlow POS.
+ * - Closing thank you and italicized Powered by BillFlow POS.
  */
 export function buildWhatsAppReceiptMessage(
   bill: Bill,
@@ -28,33 +29,11 @@ export function buildWhatsAppReceiptMessage(
   isGstEnabled: boolean = true
 ): string {
   const lines = bill.lines;
+  const DIVIDER = '----------------------------';
 
-  // Compute dynamic column widths based on the longest item name in this bill
-  const maxItemLen = lines.length > 0 ? Math.max(...lines.map((l) => l.name.length), 4) : 4;
-  const nameColWidth = Math.min(Math.max(maxItemLen, 12), 20);
-  const qtyColWidth = 11; // e.g. "QTY x PRICE" (11 chars) or "     2 x 85"
-  const amtColWidth = 7;  // e.g. " AMOUNT" (6 chars) or " 170.00" (7 chars)
-  const totalMonospaceWidth = nameColWidth + 1 + qtyColWidth + 1 + amtColWidth;
-
-  // Box-drawing bordered header block
+  // Store Header (bold name + tagline, no box drawing)
   const storeName = (profile.name || 'PASUMAI CAFE').toUpperCase();
-  const tagline = profile.tagline || 'Pure Organic Vegetarian Kitchen';
-  const boxInnerWidth = Math.max(storeName.length + 8, tagline.length + 4, totalMonospaceWidth - 2, 34);
-
-  const padCenter = (str: string, targetLen: number) => {
-    const padTotal = Math.max(0, targetLen - str.length);
-    const padLeft = Math.floor(padTotal / 2);
-    const padRight = padTotal - padLeft;
-    return ' '.repeat(padLeft) + str + ' '.repeat(padRight);
-  };
-
-  const topBorder = '┌' + '─'.repeat(boxInnerWidth) + '┐';
-  const bottomBorder = '└' + '─'.repeat(boxInnerWidth) + '┘';
-  const nameLine = '│' + padCenter(`*${storeName}*`, boxInnerWidth) + '│';
-  const taglineLine = tagline ? '│' + padCenter(tagline, boxInnerWidth) + '│' : '';
-
-  const dividerWidth = Math.max(boxInnerWidth + 2, totalMonospaceWidth);
-  const divider = '─'.repeat(dividerWidth);
+  const tagline = profile.tagline || '';
 
   // Date and Time formatting
   const dateStr =
@@ -80,16 +59,21 @@ export function buildWhatsAppReceiptMessage(
     meta += `👤 Customer: ${bill.customerName}${bill.customerPhone ? ` (${bill.customerPhone})` : ''}\n`;
   }
 
-  // Monospace itemized section wrapped in triple backticks
+  // Monospace itemized section strictly sized to 28 characters to fit mobile WhatsApp bubbles without wrapping
+  // Column allocation: Item Name (14) + Space (1) + Qty/Rate (6) + Space (1) + Amount (6) = 28 chars
+  const nameColWidth = 14;
+  const qtyColWidth = 6;
+  const amtColWidth = 6;
+
   let itemized = '```\n';
   itemized +=
     'ITEM'.padEnd(nameColWidth) +
     ' ' +
-    'QTY x PRICE'.padStart(qtyColWidth) +
+    'QTY'.padStart(qtyColWidth) +
     ' ' +
-    'AMOUNT'.padStart(amtColWidth) +
+    'AMT'.padStart(amtColWidth) +
     '\n';
-  itemized += '─'.repeat(totalMonospaceWidth) + '\n';
+  itemized += DIVIDER + '\n';
 
   for (const item of lines) {
     let name = item.name;
@@ -97,7 +81,7 @@ export function buildWhatsAppReceiptMessage(
       name = name.slice(0, nameColWidth - 1) + '…';
     }
     const namePadded = name.padEnd(nameColWidth);
-    const qtyRate = `${item.qty} x ${item.price}`.padStart(qtyColWidth);
+    const qtyRate = `${item.qty}x${item.price}`.padStart(qtyColWidth);
     const amt = (item.qty * item.price).toFixed(2).padStart(amtColWidth);
     itemized += `${namePadded} ${qtyRate} ${amt}\n`;
 
@@ -129,22 +113,22 @@ export function buildWhatsAppReceiptMessage(
   // Footer thank you note and powered by signature in italics
   const footer = '🌿 Thank you, visit again! 🙏\n_Powered by BillFlow POS_';
 
-  return [
-    topBorder,
-    nameLine,
-    ...(taglineLine ? [taglineLine] : []),
-    bottomBorder,
+  const parts = [
+    `*${storeName}*`,
+    tagline,
     '',
     meta.trimEnd(),
-    divider,
+    DIVIDER,
     itemized,
-    divider,
+    DIVIDER,
     totals,
-    divider,
+    DIVIDER,
     paymentSection,
     '',
     footer,
-  ].join('\n');
+  ];
+
+  return parts.filter((p, i) => i === 2 || i === parts.length - 2 || Boolean(p)).join('\n');
 }
 
 /**

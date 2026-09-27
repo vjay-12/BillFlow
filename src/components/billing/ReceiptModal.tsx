@@ -262,55 +262,37 @@ export const ReceiptModal: React.FC = () => {
             </button>
           </div>
 
-          {/* Recipient Context Notice */}
-          <div className="text-[11px] text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200/80 flex items-center justify-between">
-            <span className="truncate">
-              {bill.customerPhone ? (
-                <>
-                  Sending to: <strong className="font-bold">{bill.customerName || 'Customer'}</strong> (+91 {bill.customerPhone})
-                </>
-              ) : (
-                <span className="text-slate-600">
-                  No phone attached — will prompt on tap
-                </span>
-              )}
-            </span>
-            <span className="text-[10px] text-emerald-700 font-bold shrink-0 ml-2">
-              WhatsApp Text
-            </span>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 pt-1">
             <button
               onClick={handleSendWhatsAppText}
-              className="py-2 px-1.5 sm:px-2 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 active:bg-emerald-200 font-bold text-xs flex items-center justify-center gap-1 transition min-w-0 cursor-pointer"
+              className="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition cursor-pointer"
               title={
                 bill.customerPhone
-                  ? `Send formatted text receipt to ${bill.customerPhone} on WhatsApp`
-                  : 'Prompt for phone number and send text receipt via WhatsApp'
+                  ? `Send formatted receipt to ${bill.customerPhone} on WhatsApp`
+                  : 'Prompt for phone number and send receipt via WhatsApp'
               }
             >
-              <Smartphone className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span className="whitespace-nowrap">Send via WhatsApp</span>
+              <Smartphone className="w-4 h-4 text-emerald-100 shrink-0" />
+              <span>Send via WhatsApp</span>
             </button>
 
-            <button
-              onClick={handleCopyText}
-              className="py-2 px-1.5 sm:px-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 font-bold text-xs flex items-center justify-center gap-1 transition min-w-0"
-            >
-              <Share2 className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap">{copiedSummary ? 'Copied!' : 'Copy'}</span>
-            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={handleCopyText}
+                className="py-2 px-3 rounded-xl border border-slate-200 dark:border-[#3D2C20] bg-slate-50 dark:bg-[#342419] text-slate-700 dark:text-[#E8DCC8] hover:bg-slate-100 font-bold text-xs flex items-center justify-center gap-1.5 transition"
+              >
+                <Share2 className="w-3.5 h-3.5 shrink-0 text-slate-500" />
+                <span>{copiedSummary ? 'Copied!' : 'Copy Summary'}</span>
+              </button>
 
-            <button
-              onClick={() => setIsReceiptModalOpen(false)}
-              className="py-2 px-1.5 sm:px-2 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 hover:bg-teal-100 font-bold text-xs flex items-center justify-center gap-1 transition min-w-0"
-            >
-              <Plus className="w-3.5 h-3.5 text-teal-700 shrink-0" />
-              <span className="whitespace-nowrap font-bold">New Sale</span>
-            </button>
+              <button
+                onClick={() => setIsReceiptModalOpen(false)}
+                className="py-2 px-3 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/60 text-teal-800 dark:text-teal-300 hover:bg-teal-100 font-bold text-xs flex items-center justify-center gap-1.5 transition"
+              >
+                <Plus className="w-3.5 h-3.5 text-teal-700 dark:text-teal-400 shrink-0" />
+                <span className="font-bold">New Sale</span>
+              </button>
+            </div>
           </div>
-        </div>
       </div>
     </div>
   );
