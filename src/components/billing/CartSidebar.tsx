@@ -10,9 +10,7 @@ import {
   Tag, 
   ChevronRight, 
   Utensils, 
-  Package, 
-  FileEdit,
-  Check
+  Package
 } from 'lucide-react';
 import { db } from '../../db/schema';
 import { useCartStore } from '../../stores/cartStore';
@@ -33,7 +31,6 @@ export const CartSidebar: React.FC = () => {
     isGstEnabled,
     incrementQty,
     decrementQty,
-    updateNote,
     setOrderType,
     setTable,
     setDiscount,
@@ -47,7 +44,6 @@ export const CartSidebar: React.FC = () => {
 
   const { setIsPaymentModalOpen, setIsCustomerSelectModalOpen } = useUIStore();
   const [showDiscountInput, setShowDiscountInput] = useState(false);
-  const [activeNoteItemId, setActiveNoteItemId] = useState<string | null>(null);
 
   // Business profile for table count & Tamil menu display language
   const profile = useLiveQuery(() => db.businessProfile.get('main'), []);
@@ -178,7 +174,7 @@ export const CartSidebar: React.FC = () => {
       </div>
 
       {/* Cart Lines List - independently scrollable */}
-      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-3 space-y-2">
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-3 space-y-1.5">
         {lines.length === 0 ? (
           <div className="h-full py-6 flex flex-col items-center justify-center text-center p-6 text-slate-400">
             <ShoppingBag className="w-12 h-12 stroke-[1.2] text-slate-300 mb-2" />
@@ -196,85 +192,59 @@ export const CartSidebar: React.FC = () => {
             return (
               <div
                 key={line.itemId}
-                className="bg-slate-50/80 rounded-xl p-2.5 border border-slate-200/80 hover:border-slate-300 transition"
+                className="bg-slate-50/90 dark:bg-[#271C15]/70 rounded-xl px-3 py-2 border border-slate-200/80 dark:border-[#3D2C20] hover:border-slate-300 dark:hover:border-[#4E392A] transition"
               >
-                <div className="flex items-start justify-between gap-2 min-w-0">
-                  <div className="flex-1 min-w-0">
-                    <div className="font-bold text-xs sm:text-sm text-slate-800 leading-tight truncate" title={displayName}>
-                      {displayName}
-                    </div>
-                    <div className="text-[11px] font-mono text-slate-500 mt-0.5">
-                      {formatCurrency(line.price)} {t('cart.each')}
-                    </div>
+                {/* Top Row: Item name (left), Quantity control (middle-right), Total price (far-right) */}
+                <div className="flex items-center justify-between gap-2 min-w-0">
+                  <div
+                    className="font-bold text-xs sm:text-sm text-slate-800 dark:text-[#F5F0E6] leading-tight truncate flex-1 min-w-0"
+                    title={displayName}
+                  >
+                    {displayName}
                   </div>
 
-                <div className="text-right shrink-0">
-                  <div className="font-extrabold text-xs sm:text-sm font-mono text-slate-900">
+                  {/* Quantity Stepper [ - 1 + ] */}
+                  <div className="flex items-center gap-1 bg-white dark:bg-[#1E140E] border border-slate-200 dark:border-[#3D2C20] rounded-lg p-0.5 shadow-2xs shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => decrementQty(line.itemId)}
+                      className="w-5 h-5 rounded flex items-center justify-center text-slate-600 dark:text-[#D4C7B5] hover:bg-slate-100 dark:hover:bg-[#38291F] transition cursor-pointer"
+                      aria-label="Decrease quantity"
+                    >
+                      {line.qty === 1 ? (
+                        <Trash2 className="w-3 h-3 text-rose-500" />
+                      ) : (
+                        <Minus className="w-3 h-3" />
+                      )}
+                    </button>
+                    <span className="w-5 text-center font-bold font-mono text-xs text-slate-800 dark:text-[#F5F0E6]">
+                      {line.qty}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => incrementQty(line.itemId)}
+                      className="w-5 h-5 rounded flex items-center justify-center text-slate-600 dark:text-[#D4C7B5] hover:bg-slate-100 dark:hover:bg-[#38291F] transition cursor-pointer"
+                      aria-label="Increase quantity"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </button>
+                  </div>
+
+                  {/* Item Total Price on the far right */}
+                  <div className="font-extrabold text-xs sm:text-sm font-mono text-slate-900 dark:text-[#F5F0E6] text-right shrink-0 min-w-[50px]">
                     {formatCurrency(line.price * line.qty)}
                   </div>
                 </div>
-              </div>
 
-              {/* Quantity Stepper & Note Button */}
-              <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-200/60">
-                <button
-                  onClick={() =>
-                    setActiveNoteItemId(
-                      activeNoteItemId === line.itemId ? null : line.itemId
-                    )
-                  }
-                  className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-teal-700"
-                >
-                  <FileEdit className="w-3 h-3" />
-                  <span>{line.note ? t('cart.note', { note: line.note }) : t('cart.addNote')}</span>
-                </button>
-
-                <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg p-0.5 shadow-2xs">
-                  <button
-                    onClick={() => decrementQty(line.itemId)}
-                    className="w-6 h-6 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100 transition"
-                  >
-                    {line.qty === 1 ? (
-                      <Trash2 className="w-3 h-3 text-rose-500" />
-                    ) : (
-                      <Minus className="w-3 h-3" />
-                    )}
-                  </button>
-                  <span className="w-6 text-center font-bold font-mono text-xs text-slate-800">
-                    {line.qty}
-                  </span>
-                  <button
-                    onClick={() => incrementQty(line.itemId)}
-                    className="w-6 h-6 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100 transition"
-                  >
-                    <Plus className="w-3 h-3" />
-                  </button>
+                {/* Bottom Row: Unit Price underneath the item name */}
+                <div className="text-[11px] font-mono text-slate-500 dark:text-[#B8A990] mt-0.5">
+                  {formatCurrency(line.price)} {t('cart.each')}
                 </div>
               </div>
-
-              {/* Note input dropdown */}
-              {activeNoteItemId === line.itemId && (
-                <div className="mt-2 pt-1.5 border-t border-dashed border-slate-200 flex items-center gap-1.5">
-                  <input
-                    type="text"
-                    placeholder={t('cart.notePlaceholder')}
-                    value={line.note || ''}
-                    onChange={(e) => updateNote(line.itemId, e.target.value)}
-                    className="flex-1 bg-white text-xs px-2 py-1 rounded border border-slate-200 focus:outline-none focus:ring-1 focus:ring-teal-600"
-                  />
-                  <button
-                    onClick={() => setActiveNoteItemId(null)}
-                    className="p-1 bg-teal-600 text-white rounded text-xs"
-                  >
-                    <Check className="w-3 h-3" />
-                  </button>
-                </div>
-              )}
-            </div>
-          );
-        })
-      )}
-    </div>
+            );
+          })
+        )}
+      </div>
 
       {/* Bill Calculation Summary & Checkout */}
       <div className={`shrink-0 p-3.5 sm:p-4 bg-slate-50 dark:bg-[#271C15] border-t border-slate-200 dark:border-[#3D2C20] space-y-2.5 ${
