@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Save, User, Phone, Wallet } from 'lucide-react';
+import { X, Save, User, Phone } from 'lucide-react';
 import { useUIStore } from '../../stores/uiStore';
 import { customersRepo } from '../../db/customersRepo';
 import type { Customer } from '../../types';
@@ -9,14 +9,12 @@ export const CustomerFormModal: React.FC = () => {
 
   const [name, setName] = useState(editingCustomer?.name || '');
   const [phone, setPhone] = useState(editingCustomer?.phone || '');
-  const [outstanding, setOutstanding] = useState<number>(editingCustomer?.outstanding || 0);
   const [prevEditing, setPrevEditing] = useState(editingCustomer);
 
   if (editingCustomer !== prevEditing) {
     setPrevEditing(editingCustomer);
     setName(editingCustomer?.name || '');
     setPhone(editingCustomer?.phone || '');
-    setOutstanding(editingCustomer?.outstanding || 0);
   }
 
   if (!isCustomerFormModalOpen) return null;
@@ -37,14 +35,13 @@ export const CustomerFormModal: React.FC = () => {
         await customersRepo.update(editingCustomer.id, {
           name,
           phone,
-          outstanding: Number(outstanding),
         });
       } else {
         const newCust: Customer = {
           id: `cust-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           name,
           phone,
-          outstanding: Number(outstanding),
+          outstanding: 0,
           loyaltyPoints: 0,
           createdAt: Date.now(),
         };
@@ -68,7 +65,7 @@ export const CustomerFormModal: React.FC = () => {
               {editingCustomer ? 'Edit Customer' : 'Register New Customer'}
             </h3>
             <p className="text-xs text-slate-500">
-              Manage loyalty points and credit account ledger
+              Manage customer profile and contact details
             </p>
           </div>
           <button
@@ -109,25 +106,6 @@ export const CustomerFormModal: React.FC = () => {
                 className="w-full pl-9 pr-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white"
               />
             </div>
-          </div>
-
-          <div>
-            <label className="block font-bold text-slate-700 mb-1">
-              Initial Outstanding Credit / Due (₹)
-            </label>
-            <div className="relative">
-              <Wallet className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="number"
-                min="0"
-                value={outstanding}
-                onChange={(e) => setOutstanding(Number(e.target.value))}
-                className="w-full pl-9 pr-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white"
-              />
-            </div>
-            <p className="text-[10px] text-slate-400 mt-1">
-              Enter 0 if the customer has no existing credit dues.
-            </p>
           </div>
 
           <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">

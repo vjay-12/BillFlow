@@ -54,7 +54,7 @@ export const CartSidebar: React.FC = () => {
   const tables = ['Table 1', 'Table 2', 'Table 3', 'Table 4', 'Table 5', 'Bar 1', 'Patio 2'];
 
   return (
-    <aside className="w-full lg:w-[420px] bg-white border-t lg:border-t-0 lg:border-l border-slate-200 flex flex-col h-auto lg:h-full shadow-lg z-20">
+    <aside className="w-full h-full bg-white dark:bg-[#2E2119] flex flex-col min-w-0 overflow-hidden shadow-lg z-20">
       {/* Top Header */}
       <div className="p-3.5 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -135,36 +135,35 @@ export const CartSidebar: React.FC = () => {
           {customer ? (
             <div
               onClick={() => setIsCustomerModalOpen(true)}
-              className="flex-1 flex items-center justify-between bg-teal-50 border border-teal-200 rounded-xl px-2.5 py-1.5 cursor-pointer hover:bg-teal-100/70 transition"
+              className="flex-1 flex items-center justify-between bg-teal-50 border border-teal-200 rounded-xl px-2.5 py-1.5 cursor-pointer hover:bg-teal-100/70 transition min-w-0"
             >
-              <div className="flex items-center gap-2">
-                <User className="w-3.5 h-3.5 text-teal-700" />
-                <span className="text-xs font-bold text-teal-900">{customer.name}</span>
-                <span className="text-[10px] text-teal-600 font-medium">{customer.phone}</span>
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <User className="w-3.5 h-3.5 text-teal-700 shrink-0" />
+                <span className="text-xs font-bold text-teal-900 truncate">{customer.name}</span>
+                <span className="text-[10px] text-teal-600 font-medium shrink-0">{customer.phone}</span>
               </div>
-              <span className="text-[10px] font-bold text-teal-700">Change</span>
+              <span className="text-[10px] font-bold text-teal-700 shrink-0 ml-1.5">Change</span>
             </div>
           ) : (
             <button
               onClick={() => setIsCustomerModalOpen(true)}
-              className="flex-1 flex items-center justify-center gap-1.5 border border-dashed border-slate-300 hover:border-teal-500 hover:text-teal-700 rounded-xl py-1.5 text-xs text-slate-500 font-semibold transition"
+              className="flex-1 flex items-center justify-center gap-1.5 border border-dashed border-slate-300 hover:border-teal-500 hover:text-teal-700 rounded-xl py-1.5 text-xs text-slate-500 font-semibold transition cursor-pointer"
             >
               <User className="w-3.5 h-3.5" />
-              <span>Attach Customer (Loyalty/Credit)</span>
+              <span>Attach Customer (Loyalty)</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Cart Lines List */}
-      <div className="min-h-[100px] max-h-80 overflow-y-auto lg:max-h-none lg:flex-1 p-3 space-y-2">
+      {/* Cart Lines List - independently scrollable */}
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-3 space-y-2">
         {lines.length === 0 ? (
           <div className="h-full py-6 flex flex-col items-center justify-center text-center p-6 text-slate-400">
             <ShoppingBag className="w-12 h-12 stroke-[1.2] text-slate-300 mb-2" />
             <p className="font-semibold text-slate-600 text-sm">Cart is empty</p>
             <p className="text-xs text-slate-400 mt-1 max-w-[220px]">
-              <span className="lg:hidden">Tap any item above to add it to this bill.</span>
-              <span className="hidden lg:inline">Tap any item on the left grid to add it to this bill.</span>
+              Tap any item on the left grid to add it to this bill.
             </p>
           </div>
         ) : (
@@ -173,9 +172,9 @@ export const CartSidebar: React.FC = () => {
               key={line.itemId}
               className="bg-slate-50/80 rounded-xl p-2.5 border border-slate-200/80 hover:border-slate-300 transition"
             >
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1">
-                  <div className="font-bold text-xs sm:text-sm text-slate-800 leading-tight">
+              <div className="flex items-start justify-between gap-2 min-w-0">
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-xs sm:text-sm text-slate-800 leading-tight truncate" title={line.name}>
                     {line.name}
                   </div>
                   <div className="text-[11px] font-mono text-slate-500 mt-0.5">
@@ -183,7 +182,7 @@ export const CartSidebar: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="text-right">
+                <div className="text-right shrink-0">
                   <div className="font-extrabold text-xs sm:text-sm font-mono text-slate-900">
                     {formatCurrency(line.price * line.qty)}
                   </div>
@@ -251,38 +250,41 @@ export const CartSidebar: React.FC = () => {
       </div>
 
       {/* Bill Calculation Summary & Checkout */}
-      <div className="p-3.5 bg-slate-50 border-t border-slate-200 space-y-2.5 pb-36 md:pb-3.5">
+      <div className="shrink-0 p-3.5 sm:p-4 bg-slate-50 dark:bg-[#271C15] border-t border-slate-200 dark:border-[#3D2C20] space-y-2.5 pb-24 md:pb-4">
         {/* Discount Bar */}
         <div className="flex items-center justify-between text-xs">
           <button
+            type="button"
             onClick={() => setShowDiscountInput(!showDiscountInput)}
-            className="flex items-center gap-1 font-bold text-amber-600 hover:text-amber-700"
+            className="flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 cursor-pointer"
           >
             <Tag className="w-3.5 h-3.5" />
             <span>{discountAmount > 0 ? `Discount Applied` : `+ Add Discount`}</span>
           </button>
           {discountAmount > 0 && (
-            <span className="font-bold font-mono text-amber-600">
+            <span className="font-bold font-mono text-amber-600 dark:text-amber-400 shrink-0 ml-2">
               -{formatCurrency(discountAmount)}
             </span>
           )}
         </div>
 
         {showDiscountInput && (
-          <div className="p-2 bg-white rounded-xl border border-slate-200 flex items-center gap-2 text-xs">
-            <div className="flex bg-slate-100 rounded-lg p-0.5">
+          <div className="p-2 bg-white dark:bg-[#2E2119] rounded-xl border border-slate-200 dark:border-[#3D2C20] flex items-center gap-2 text-xs">
+            <div className="flex bg-slate-100 dark:bg-[#271C15] rounded-lg p-0.5 shrink-0">
               <button
+                type="button"
                 onClick={() => setDiscount('fixed', discountValue)}
-                className={`px-2 py-0.5 rounded font-bold ${
-                  discountType === 'fixed' ? 'bg-white shadow-xs text-slate-800' : 'text-slate-500'
+                className={`px-2 py-0.5 rounded font-bold cursor-pointer ${
+                  discountType === 'fixed' ? 'bg-white dark:bg-[#2E2119] shadow-xs text-slate-800 dark:text-[#F5F0E6]' : 'text-slate-500'
                 }`}
               >
                 ₹ Flat
               </button>
               <button
+                type="button"
                 onClick={() => setDiscount('percent', discountValue)}
-                className={`px-2 py-0.5 rounded font-bold ${
-                  discountType === 'percent' ? 'bg-white shadow-xs text-slate-800' : 'text-slate-500'
+                className={`px-2 py-0.5 rounded font-bold cursor-pointer ${
+                  discountType === 'percent' ? 'bg-white dark:bg-[#2E2119] shadow-xs text-slate-800 dark:text-[#F5F0E6]' : 'text-slate-500'
                 }`}
               >
                 %
@@ -294,12 +296,13 @@ export const CartSidebar: React.FC = () => {
               placeholder="0"
               value={discountValue || ''}
               onChange={(e) => setDiscount(discountType, Number(e.target.value))}
-              className="w-20 px-2 py-1 bg-slate-50 rounded border border-slate-200 text-right font-mono font-bold focus:outline-none focus:ring-1 focus:ring-teal-600"
+              className="w-20 px-2 py-1 bg-slate-50 dark:bg-[#271C15] text-slate-800 dark:text-[#F5F0E6] rounded border border-slate-200 dark:border-[#3D2C20] text-right font-mono font-bold focus:outline-none focus:ring-1 focus:ring-teal-600"
             />
             {discountValue > 0 && (
               <button
+                type="button"
                 onClick={() => setDiscount('fixed', 0)}
-                className="text-[10px] text-rose-500 hover:underline"
+                className="text-[10px] text-rose-500 hover:underline shrink-0 cursor-pointer"
               >
                 Remove
               </button>
@@ -308,49 +311,50 @@ export const CartSidebar: React.FC = () => {
         )}
 
         {/* Totals Breakdown */}
-        <div className="space-y-1 text-xs text-slate-600 pt-1 border-t border-slate-200">
-          <div className="flex justify-between">
+        <div className="space-y-1.5 text-xs text-slate-600 dark:text-[#D4C7B5] pt-1 border-t border-slate-200 dark:border-[#3D2C20]">
+          <div className="flex justify-between items-center">
             <span>Subtotal</span>
-            <span className="font-mono font-medium">{formatCurrency(subtotal)}</span>
+            <span className="font-mono font-semibold text-slate-800 dark:text-[#F5F0E6] shrink-0 ml-2">{formatCurrency(subtotal)}</span>
           </div>
 
           {discountAmount > 0 && (
-            <div className="flex justify-between text-amber-600 font-medium">
+            <div className="flex justify-between items-center text-amber-600 dark:text-amber-400 font-medium">
               <span>Discount</span>
-              <span className="font-mono">-{formatCurrency(discountAmount)}</span>
+              <span className="font-mono font-semibold shrink-0 ml-2">-{formatCurrency(discountAmount)}</span>
             </div>
           )}
 
           {isGstEnabled && taxAmount > 0 && (
-            <div className="flex justify-between">
-              <span className="text-slate-500">GST</span>
-              <span className="font-mono font-medium">{formatCurrency(taxAmount)}</span>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-500 dark:text-[#B8A990]">GST</span>
+              <span className="font-mono font-semibold text-slate-800 dark:text-[#F5F0E6] shrink-0 ml-2">{formatCurrency(taxAmount)}</span>
             </div>
           )}
 
-          <div className="flex justify-between text-base font-extrabold text-slate-900 pt-1.5 border-t border-slate-200">
+          <div className="flex justify-between items-center text-sm font-extrabold text-slate-900 dark:text-[#F5F0E6] pt-1.5 border-t border-slate-200 dark:border-[#3D2C20]">
             <span>Payable Total</span>
-            <span className="font-mono text-teal-800 text-lg">{formatCurrency(total)}</span>
+            <span className="font-mono text-teal-800 dark:text-[#14A89B] text-base sm:text-lg font-black shrink-0 ml-2">{formatCurrency(total)}</span>
           </div>
         </div>
 
         {/* Charge CTA Button */}
         <button
+          type="button"
           disabled={lines.length === 0}
           onClick={() => setIsPaymentModalOpen(true)}
-          className={`w-full py-3.5 px-4 rounded-xl font-extrabold text-sm flex items-center justify-between shadow-md transition-all duration-150 ${
+          className={`w-full py-3 sm:py-3.5 px-3.5 sm:px-4 rounded-xl font-extrabold text-sm flex items-center justify-between shadow-md transition-all duration-150 ${
             lines.length === 0
-              ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+              ? 'bg-slate-200 dark:bg-[#38291F] text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
               : 'bg-teal-700 hover:bg-teal-800 text-white shadow-teal-700/25 active:scale-[0.99] cursor-pointer'
           }`}
         >
-          <div className="flex items-center gap-2">
-            <span>Proceed to Payment</span>
-            <span className="text-xs bg-teal-800/80 px-2 py-0.5 rounded-full font-mono">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <span className="truncate">Proceed to Payment</span>
+            <span className="text-xs bg-teal-800/80 px-2 py-0.5 rounded-full font-mono shrink-0">
               {itemsCount} {itemsCount === 1 ? 'item' : 'items'}
             </span>
           </div>
-          <div className="flex items-center gap-1 font-mono text-base font-bold">
+          <div className="flex items-center gap-1 font-mono text-base font-bold shrink-0 ml-2">
             <span>{formatCurrency(total)}</span>
             <ChevronRight className="w-4 h-4 stroke-[3]" />
           </div>

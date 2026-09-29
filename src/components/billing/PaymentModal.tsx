@@ -137,7 +137,7 @@ export const PaymentModal: React.FC = () => {
         <div className="bg-gradient-to-r from-teal-800 to-teal-700 dark:from-[#14A89B] dark:to-[#0D655E] text-white p-4 sm:p-5 flex items-center justify-between shadow-inner">
           <div>
             <span className="text-xs font-semibold text-teal-200 dark:text-teal-100 tracking-wide uppercase">
-              Total Amount Due
+              Total Payable Amount
             </span>
             <div className="text-3xl sm:text-4xl font-extrabold font-mono tracking-tight mt-0.5">
               {formatCurrency(total)}

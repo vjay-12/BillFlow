@@ -7,8 +7,6 @@ import {
   FileText, 
   Banknote, 
   QrCode, 
-  CreditCard, 
-  BookUser,
   CheckCircle,
   XCircle,
   X,
@@ -23,12 +21,12 @@ import { useUIStore } from '../../stores/uiStore';
 import { useCartStore } from '../../stores/cartStore';
 import { shareReceiptPdf } from '../../lib/pdfReceipt';
 import { formatCurrency, formatDateTime, formatShortDateTime } from '../../lib/formatters';
-import type { Bill, PaymentMode } from '../../types';
+import type { Bill } from '../../types';
 
 export const BillList: React.FC = () => {
   const { setActiveBillForReceipt, setIsReceiptModalOpen } = useUIStore();
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterMode, setFilterMode] = useState<'All' | PaymentMode>('All');
+  const [filterMode, setFilterMode] = useState<'All' | 'Cash' | 'UPI'>('All');
   const [selectedBillForDetail, setSelectedBillForDetail] = useState<Bill | null>(null);
   const [isSharingPdf, setIsSharingPdf] = useState(false);
   const [shareStatus, setShareStatus] = useState<string | null>(null);
@@ -111,16 +109,14 @@ export const BillList: React.FC = () => {
     }
   };
 
-  const getModeIcon = (mode: PaymentMode) => {
+  const getModeIcon = (mode: string) => {
     switch (mode) {
       case 'Cash':
         return <Banknote className="w-3.5 h-3.5 text-emerald-600" />;
       case 'UPI':
         return <QrCode className="w-3.5 h-3.5 text-sky-600" />;
-      case 'Card':
-        return <CreditCard className="w-3.5 h-3.5 text-indigo-600" />;
-      case 'Credit':
-        return <BookUser className="w-3.5 h-3.5 text-amber-600" />;
+      default:
+        return <Banknote className="w-3.5 h-3.5 text-slate-500" />;
     }
   };
 
@@ -159,8 +155,6 @@ export const BillList: React.FC = () => {
             <option value="All">All Payments</option>
             <option value="Cash">Cash</option>
             <option value="UPI">UPI</option>
-            <option value="Card">Card</option>
-            <option value="Credit">Credit</option>
           </select>
         </div>
       </div>
@@ -266,7 +260,6 @@ export const BillList: React.FC = () => {
                     <th className="py-3 px-4">Payment</th>
                     <th className="py-3 px-4 text-right">Total</th>
                     <th className="py-3 px-4 text-center">Status</th>
-                    <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-[#3D2C20] font-medium text-slate-700">
@@ -327,26 +320,6 @@ export const BillList: React.FC = () => {
                             <XCircle className="w-3 h-3" /> Cancelled
                           </span>
                         )}
-                      </td>
-                      <td className="py-3 px-4 text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => handlePrint(bill)}
-                            title="Print / View Receipt"
-                            className="p-1.5 rounded-lg text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 transition"
-                          >
-                            <Printer className="w-3.5 h-3.5" />
-                          </button>
-                          {bill.status !== 'Cancelled' && (
-                            <button
-                              onClick={() => handleCancel(bill)}
-                              title="Cancel / Void Bill"
-                              className="p-1.5 rounded-lg text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition"
-                            >
-                              <Ban className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </div>
                       </td>
                     </tr>
                   ))}

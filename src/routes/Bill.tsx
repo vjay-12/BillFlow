@@ -28,7 +28,7 @@ export const BillRoute: React.FC = () => {
         id="cart-checkout-section" 
         className={`${
           isTabletLandscape 
-            ? 'w-[380px] xl:w-[420px] h-full border-l border-slate-200 dark:border-[#3D2C20] shrink-0 z-10' 
+            ? 'w-[330px] md:w-[350px] lg:w-[370px] xl:w-[390px] max-w-[38%] min-w-[310px] h-full border-l border-slate-200 dark:border-[#3D2C20] shrink-0 z-10 flex flex-col overflow-hidden' 
             : 'w-full h-auto border-t border-slate-200 dark:border-[#3D2C20] shrink-0'
         }`}
       >

@@ -4,9 +4,7 @@ import {
   TrendingUp, 
   ShoppingBag, 
   DollarSign, 
-  Award,
-  Download,
-  Share2
+  Award
 } from 'lucide-react';
 import { db } from '../../db/schema';
 import { useCartStore } from '../../stores/cartStore';
@@ -49,8 +47,8 @@ export const ReportsDashboard: React.FC = () => {
         avgOrderValue: 0,
         totalTax: 0,
         totalDiscount: 0,
-        paymentModes: { Cash: 0, UPI: 0, Card: 0, Credit: 0 },
-        orderTypes: { 'Dine-in': 0, 'Takeaway': 0, 'Delivery': 0 },
+        paymentModes: { Cash: 0, UPI: 0 },
+        orderTypes: { 'Dine-in': 0, 'Takeaway': 0 },
         topItems: [] as { name: string; qty: number; revenue: number }[],
       };
     }
@@ -58,8 +56,8 @@ export const ReportsDashboard: React.FC = () => {
     let revenue = 0;
     let tax = 0;
     let discount = 0;
-    const paymentModes: Record<string, number> = { Cash: 0, UPI: 0, Card: 0, Credit: 0 };
-    const orderTypes: Record<string, number> = { 'Dine-in': 0, Takeaway: 0, Delivery: 0 };
+    const paymentModes: Record<string, number> = { Cash: 0, UPI: 0 };
+    const orderTypes: Record<string, number> = { 'Dine-in': 0, 'Takeaway': 0 };
     const itemMap = new Map<string, { name: string; qty: number; revenue: number }>();
 
     for (const b of bills) {
@@ -67,8 +65,12 @@ export const ReportsDashboard: React.FC = () => {
       tax += b.tax;
       discount += b.discount;
 
-      paymentModes[b.paymentMode] = (paymentModes[b.paymentMode] || 0) + b.total;
-      orderTypes[b.orderType] = (orderTypes[b.orderType] || 0) + 1;
+      if (b.paymentMode === 'Cash' || b.paymentMode === 'UPI') {
+        paymentModes[b.paymentMode] = (paymentModes[b.paymentMode] || 0) + b.total;
+      }
+      if (b.orderType === 'Dine-in' || b.orderType === 'Takeaway') {
+        orderTypes[b.orderType] = (orderTypes[b.orderType] || 0) + 1;
+      }
 
       for (const line of b.lines) {
         const existing = itemMap.get(line.itemId) || { name: line.name, qty: 0, revenue: 0 };
@@ -94,39 +96,6 @@ export const ReportsDashboard: React.FC = () => {
     };
   }, [bills]);
 
-  const handleExportReport = () => {
-    if (!bills || bills.length === 0) {
-      alert('No sales data to export for this period.');
-      return;
-    }
-    const rows = [
-      ['Report Period', timeFilter.toUpperCase()],
-      ['Total Orders', stats.ordersCount.toString()],
-      ['Total Revenue', stats.totalRevenue.toString()],
-      ...(isGstEnabled && stats.totalTax > 0 ? [['Total GST Collected', stats.totalTax.toString()]] : []),
-      ['Total Discounts', stats.totalDiscount.toString()],
-      ['Average Order Value', stats.avgOrderValue.toString()],
-      [''],
-      ['Top Selling Products', 'Units Sold', 'Revenue (INR)'],
-      ...stats.topItems.map((item) => [item.name, item.qty.toString(), item.revenue.toString()]),
-    ];
-    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map((e) => e.map(c => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `sales-report-${timeFilter}-${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handleShareReport = () => {
-    const gstLine = isGstEnabled && stats.totalTax > 0 ? `\nGST: ${formatCurrency(stats.totalTax)}` : '';
-    const text = `*Pasumai Cafe - Sales Summary (${timeFilter.toUpperCase()})*\nOrders: ${stats.ordersCount}\nRevenue: ${formatCurrency(stats.totalRevenue)}${gstLine}\nTop Dish: ${stats.topItems[0] ? `${stats.topItems[0].name} (${stats.topItems[0].qty} sold)` : 'None'}`;
-    const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(waUrl, '_blank');
-  };
-
   return (
     <div className="flex-1 p-4 lg:p-6 pb-20 md:pb-6 overflow-y-auto max-w-7xl mx-auto w-full space-y-5">
       {/* Top Banner & Date Filter */}
@@ -140,54 +109,34 @@ export const ReportsDashboard: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-bold text-slate-600">
-            <button
-              onClick={() => setTimeFilter('today')}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                timeFilter === 'today' ? 'bg-white text-slate-900 shadow-xs' : 'hover:text-slate-900'
-              }`}
-            >
-              Today
-            </button>
-            <button
-              onClick={() => setTimeFilter('week')}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                timeFilter === 'week' ? 'bg-white text-slate-900 shadow-xs' : 'hover:text-slate-900'
-              }`}
-            >
-              Last 7 Days
-            </button>
-            <button
-              onClick={() => setTimeFilter('all')}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                timeFilter === 'all' ? 'bg-white text-slate-900 shadow-xs' : 'hover:text-slate-900'
-              }`}
-            >
-              All Time
-            </button>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={handleExportReport}
-              className="flex items-center gap-1 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition border border-slate-200"
-              title="Export CSV sales report"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Export CSV</span>
-            </button>
-            <button
-              type="button"
-              onClick={handleShareReport}
-              className="flex items-center gap-1 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl text-xs font-bold transition border border-emerald-200"
-              title="Share report summary via WhatsApp"
-            >
-              <Share2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Share</span>
-            </button>
-          </div>
+        <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-bold text-slate-600">
+          <button
+            type="button"
+            onClick={() => setTimeFilter('today')}
+            className={`px-3 py-1.5 rounded-lg transition cursor-pointer ${
+              timeFilter === 'today' ? 'bg-white text-slate-900 shadow-xs' : 'hover:text-slate-900'
+            }`}
+          >
+            Today
+          </button>
+          <button
+            type="button"
+            onClick={() => setTimeFilter('week')}
+            className={`px-3 py-1.5 rounded-lg transition cursor-pointer ${
+              timeFilter === 'week' ? 'bg-white text-slate-900 shadow-xs' : 'hover:text-slate-900'
+            }`}
+          >
+            Last 7 Days
+          </button>
+          <button
+            type="button"
+            onClick={() => setTimeFilter('all')}
+            className={`px-3 py-1.5 rounded-lg transition cursor-pointer ${
+              timeFilter === 'all' ? 'bg-white text-slate-900 shadow-xs' : 'hover:text-slate-900'
+            }`}
+          >
+            All Time
+          </button>
         </div>
       </div>
 
@@ -279,8 +228,6 @@ export const ReportsDashboard: React.FC = () => {
             {[
               { mode: 'Cash', color: 'bg-emerald-500', amount: stats.paymentModes['Cash'] || 0 },
               { mode: 'UPI', color: 'bg-sky-500', amount: stats.paymentModes['UPI'] || 0 },
-              { mode: 'Card', color: 'bg-indigo-500', amount: stats.paymentModes['Card'] || 0 },
-              { mode: 'Credit', color: 'bg-amber-500', amount: stats.paymentModes['Credit'] || 0 },
             ].map((item) => {
               const pct = stats.totalRevenue > 0 ? (item.amount / stats.totalRevenue) * 100 : 0;
               return (
@@ -310,7 +257,7 @@ export const ReportsDashboard: React.FC = () => {
             <span className="text-xs text-slate-400 font-mono">By Volume</span>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {Object.entries(stats.orderTypes).map(([type, count]) => (
               <div
                 key={type}

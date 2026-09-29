@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Search, UserPlus, X, Phone, Award, Check } from 'lucide-react';
+import { Search, UserPlus, X, Phone, Check } from 'lucide-react';
 import { db } from '../../db/schema';
 import { useCartStore } from '../../stores/cartStore';
 import { useUIStore } from '../../stores/uiStore';
@@ -49,7 +49,7 @@ export const CustomerSelectModal: React.FC<CustomerSelectModalProps> = ({ isOpen
         <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <div>
             <h3 className="font-bold text-slate-800 text-base">Select Customer</h3>
-            <p className="text-xs text-slate-500">Link customer to this bill for loyalty & credit tracking</p>
+            <p className="text-xs text-slate-500">Link customer to this bill for loyalty rewards</p>
           </div>
           <button
             onClick={onClose}
@@ -99,32 +99,25 @@ export const CustomerSelectModal: React.FC<CustomerSelectModalProps> = ({ isOpen
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-sm text-slate-800">{c.name}</span>
-                      {isSelected && (
-                        <span className="text-[10px] bg-teal-600 text-white font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
-                          <Check className="w-3 h-3" /> Attached
-                        </span>
-                      )}
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200/80">
+                        <span>⭐</span>
+                        <span>{c.loyaltyPoints} pts</span>
+                      </span>
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-slate-500 mt-0.5">
-                      <span className="flex items-center gap-1">
-                        <Phone className="w-3 h-3 text-slate-400" />
-                        {c.phone}
-                      </span>
-                      <span className="flex items-center gap-1 text-amber-600 font-medium">
-                        <Award className="w-3 h-3" />
-                        {c.loyaltyPoints} pts
-                      </span>
+                    <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
+                      <Phone className="w-3 h-3 text-slate-400" />
+                      <span className="font-mono">{c.phone}</span>
                     </div>
                   </div>
 
                   <div className="text-right">
-                    {c.outstanding > 0 ? (
-                      <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
-                        Due: ₹{c.outstanding}
+                    {isSelected ? (
+                      <span className="text-[10px] bg-teal-600 text-white font-bold px-2 py-1 rounded-full flex items-center gap-0.5">
+                        <Check className="w-3 h-3" /> Attached
                       </span>
                     ) : (
-                      <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                        No Due
+                      <span className="text-xs font-semibold text-teal-700 hover:text-teal-800">
+                        Select
                       </span>
                     )}
                   </div>
