@@ -48,7 +48,7 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-2.5 sm:px-4 py-2 flex items-center justify-between gap-2 sm:gap-3 shadow-xs">
       {/* Brand & Store: Logo "P" and Business Name */}
-      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         {/* Custom Leaf + P Monogram (sits directly on header background without container) */}
         <PasumaiLogo 
           aria-label="Pasumai Cafe Logo"
@@ -70,8 +70,8 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Global Search Bar (for Billing & Inventory) */}
-      {(activeTab === 'billing' || activeTab === 'items') && (
-        <div className="flex-1 max-w-md mx-2 hidden sm:block">
+      {(activeTab === 'billing' || activeTab === 'items') ? (
+        <div className="flex-1 max-w-sm md:max-w-md lg:max-w-lg ml-3 sm:ml-5 md:ml-7 mr-auto hidden sm:block">
           <div className="relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
@@ -91,6 +91,8 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </div>
         </div>
+      ) : (
+        <div className="flex-1" />
       )}
 
       {/* Actions & Status */}

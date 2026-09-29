@@ -347,10 +347,11 @@ export const CartSidebar: React.FC = () => {
               : 'bg-teal-700 hover:bg-teal-800 text-white shadow-teal-700/25 active:scale-[0.99] cursor-pointer'
           }`}
         >
-          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-            <span className="truncate">{t('cart.proceedToPayment')}</span>
-            <span className="text-xs bg-teal-800/80 px-2 py-0.5 rounded-full font-mono shrink-0">
-              {itemsCount === 1 ? t('cart.itemCountSingular', { count: itemsCount }) : t('cart.itemCountPlural', { count: itemsCount })}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <span className="shrink-0">{t('cart.proceedToPayment')}</span>
+            <span className="text-xs bg-teal-800/80 px-1.5 py-0.5 rounded-full font-mono shrink-0">
+              <span className="hidden 2xl:inline">{itemsCount === 1 ? t('cart.itemCountSingular', { count: itemsCount }) : t('cart.itemCountPlural', { count: itemsCount })}</span>
+              <span className="2xl:hidden">{itemsCount}</span>
             </span>
           </div>
           <div className="flex items-center gap-1 font-mono text-base font-bold shrink-0 ml-2">

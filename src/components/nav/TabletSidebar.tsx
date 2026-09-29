@@ -6,9 +6,7 @@ import {
   UtensilsCrossed, 
   Users, 
   BarChart3, 
-  Settings,
-  PanelLeftClose,
-  PanelLeft
+  Settings
 } from 'lucide-react';
 import { useUIStore } from '../../stores/uiStore';
 import { useCartStore } from '../../stores/cartStore';
@@ -41,21 +39,77 @@ export const TabletSidebar: React.FC = () => {
       aria-label="Sidebar Navigation"
     >
       {/* Top Header / Toggle Collapse Area */}
-      <div className="border-b border-slate-100 dark:border-[#3D2C20]">
+      <div className={`border-b border-slate-100 dark:border-[#3D2C20] py-2.5 flex items-center ${
+        isSidebarCollapsed ? 'px-2 justify-center' : 'px-3 justify-start'
+      }`}>
         <button
           type="button"
           onClick={toggleSidebar}
           title={isSidebarCollapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')}
           aria-label={isSidebarCollapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')}
-          className={`w-full py-3.5 px-3 flex items-center hover:bg-slate-50 dark:hover:bg-[#38291F] transition cursor-pointer text-slate-500 hover:text-slate-800 dark:text-[#D4C7B5] dark:hover:text-[#F5F0E6] ${
-            isSidebarCollapsed ? 'justify-center' : 'justify-end'
+          className={`group flex items-center justify-center p-2 rounded-xl text-slate-500 hover:text-teal-700 dark:text-[#D4C7B5] dark:hover:text-[#14A89B] hover:bg-slate-100 dark:hover:bg-[#38291F] transition-all duration-200 cursor-pointer ${
+            isSidebarCollapsed ? 'w-12 h-10 mx-auto' : ''
           }`}
         >
-          {isSidebarCollapsed ? (
-            <PanelLeft className="w-5 h-5 stroke-[2.2]" />
-          ) : (
-            <PanelLeftClose className="w-5 h-5 stroke-[2.2]" />
-          )}
+          {/* Custom Animated POS Sidebar Toggle Icon */}
+          <svg
+            className="w-5 h-5 shrink-0 transition-transform duration-200 ease-out"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            {/* POS App Screen Frame */}
+            <rect
+              x="2"
+              y="3"
+              width="16"
+              height="14"
+              rx="3"
+              strokeWidth="1.6"
+              className="text-slate-500 dark:text-[#8C7B65] group-hover:text-teal-700 dark:group-hover:text-[#14A89B] transition-colors duration-200"
+            />
+            {/* Sidebar Divider Line */}
+            <line
+              x1="7"
+              y1="3"
+              x2="7"
+              y2="17"
+              strokeWidth="1.6"
+              className="text-slate-400 dark:text-[#6E5D4A] group-hover:text-teal-600 dark:group-hover:text-[#14A89B] transition-colors duration-200"
+            />
+            {/* Sidebar Rail Subtle Brand Tint */}
+            <rect
+              x="2.8"
+              y="3.8"
+              width="3.4"
+              height="12.4"
+              rx="1.2"
+              className={`transition-colors duration-200 ${
+                isSidebarCollapsed
+                  ? 'fill-slate-200 dark:fill-[#38291F] group-hover:fill-teal-600 dark:group-hover:fill-[#14A89B]'
+                  : 'fill-teal-600/25 dark:fill-teal-400/25 group-hover:fill-teal-600/50 dark:group-hover:fill-teal-400/50'
+              }`}
+            />
+            {/* Directional Action Chevron with smooth hover slide */}
+            {isSidebarCollapsed ? (
+              <path
+                d="M10.5 7.5L13 10L10.5 12.5"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-slate-600 dark:text-[#D4C7B5] group-hover:text-teal-700 dark:group-hover:text-[#14A89B] transition-transform duration-200 ease-out group-hover:translate-x-0.5"
+              />
+            ) : (
+              <path
+                d="M13 7.5L10.5 10L13 12.5"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-slate-600 dark:text-[#D4C7B5] group-hover:text-teal-700 dark:group-hover:text-[#14A89B] transition-transform duration-200 ease-out group-hover:-translate-x-0.5"
+              />
+            )}
+          </svg>
         </button>
       </div>
 
