@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { X, Save, Leaf, Flame } from 'lucide-react';
 import { db } from '../../db/schema';
@@ -7,6 +8,7 @@ import { itemsRepo } from '../../db/itemsRepo';
 import type { Item } from '../../types';
 
 export const ItemFormModal: React.FC = () => {
+  const { t } = useTranslation();
   const { isItemFormModalOpen, setIsItemFormModalOpen, editingItem, setEditingItem } = useUIStore();
   const profile = useLiveQuery(() => db.businessProfile.get('main'), []);
   const showNonVeg = profile?.showNonVeg !== false;
@@ -43,7 +45,7 @@ export const ItemFormModal: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      alert('Please enter an item name');
+      alert(t('items.enterNameAlert'));
       return;
     }
 
@@ -77,7 +79,7 @@ export const ItemFormModal: React.FC = () => {
       setIsItemFormModalOpen(false);
       setEditingItem(null);
     } catch (err: any) {
-      alert(`Error saving item: ${err.message}`);
+      alert(t('items.errorSaving', { message: err.message }));
     }
   };
 
@@ -90,14 +92,15 @@ export const ItemFormModal: React.FC = () => {
         <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
           <div>
             <h3 className="font-extrabold text-slate-800 text-base">
-              {editingItem ? 'Edit Menu Item' : 'Add New Item'}
+              {editingItem ? t('items.editMenuTitle') : t('items.addNewItemTitle')}
             </h3>
             <p className="text-xs text-slate-500">
-              Configure item name, price, and category
+              {t('items.formSubtitle')}
             </p>
           </div>
           <button
             onClick={() => setIsItemFormModalOpen(false)}
+            aria-label="Close modal"
             className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition"
           >
             <X className="w-5 h-5" />
@@ -108,11 +111,11 @@ export const ItemFormModal: React.FC = () => {
         <form onSubmit={handleSubmit} className="p-5 flex-1 overflow-y-auto space-y-4 text-xs">
           {/* Item Name */}
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Item Name *</label>
+            <label className="block font-bold text-slate-700 mb-1">{t('items.itemName')}</label>
             <input
               type="text"
               required
-              placeholder="e.g. Millet Masala Dosa"
+              placeholder={t('items.itemNamePlaceholder')}
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white"
@@ -121,31 +124,31 @@ export const ItemFormModal: React.FC = () => {
 
           {/* Tamil Name */}
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Tamil Name (Optional)</label>
+            <label className="block font-bold text-slate-700 mb-1">{t('items.tamilName')}</label>
             <input
               type="text"
-              placeholder="e.g. சிறுதானிய மசாலா தோசை"
+              placeholder={t('items.tamilNamePlaceholder')}
               value={nameTamil}
               onChange={(e) => setNameTamil(e.target.value)}
               className="w-full px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white"
             />
-            <p className="text-[10px] text-slate-400 mt-1">Displays on Billing POS cards when Tamil menu language is selected.</p>
+            <p className="text-[10px] text-slate-400 mt-1">{t('items.tamilNameHint')}</p>
           </div>
 
           {/* SKU Code & Category */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">SKU / Short Code</label>
+              <label className="block font-bold text-slate-700 mb-1">{t('items.skuShortCode')}</label>
               <input
                 type="text"
-                placeholder="e.g. TIF01"
+                placeholder={t('items.skuPlaceholder')}
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 className="w-full px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white"
               />
             </div>
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Category</label>
+              <label className="block font-bold text-slate-700 mb-1">{t('items.category')}</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -153,7 +156,7 @@ export const ItemFormModal: React.FC = () => {
               >
                 {categories.map((c) => (
                   <option key={c} value={c}>
-                    {c}
+                    {t(`common.categories.${c}`, { defaultValue: c })}
                   </option>
                 ))}
               </select>
@@ -162,7 +165,7 @@ export const ItemFormModal: React.FC = () => {
 
           {/* Price */}
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Selling Price (₹) *</label>
+            <label className="block font-bold text-slate-700 mb-1">{t('items.sellingPrice')}</label>
             <input
               type="number"
               min="0"
@@ -172,13 +175,13 @@ export const ItemFormModal: React.FC = () => {
               onChange={(e) => setPrice(Number(e.target.value))}
               className="w-full px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-sm font-mono font-bold focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white"
             />
-            <p className="text-[10px] text-slate-400 mt-1">Set to 0 if price will be entered at time of billing.</p>
+            <p className="text-[10px] text-slate-400 mt-1">{t('items.zeroPriceHint')}</p>
           </div>
 
           {/* Veg / Non-Veg Toggle - only visible when Non-Veg items are enabled in Settings */}
           {showNonVeg && (
             <div>
-              <label className="block font-bold text-slate-700 mb-1.5">Dietary Type</label>
+              <label className="block font-bold text-slate-700 mb-1.5">{t('items.dietaryType')}</label>
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -190,7 +193,7 @@ export const ItemFormModal: React.FC = () => {
                   }`}
                 >
                   <Leaf className="w-4 h-4 text-emerald-600" />
-                  <span>Vegetarian</span>
+                  <span>{t('items.vegetarian')}</span>
                 </button>
                 <button
                   type="button"
@@ -202,7 +205,7 @@ export const ItemFormModal: React.FC = () => {
                   }`}
                 >
                   <Flame className="w-4 h-4 text-rose-600" />
-                  <span>Non-Vegetarian</span>
+                  <span>{t('items.nonVegetarian')}</span>
                 </button>
               </div>
             </div>
@@ -213,16 +216,16 @@ export const ItemFormModal: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsItemFormModalOpen(false)}
-              className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-bold transition"
+              className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-bold transition cursor-pointer"
             >
-              Cancel
+              {t('items.cancel')}
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold flex items-center gap-1.5 shadow-sm transition"
+              className="px-5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold flex items-center gap-1.5 shadow-sm transition cursor-pointer"
             >
               <Save className="w-4 h-4" />
-              <span>{editingItem ? 'Save Changes' : 'Create Item'}</span>
+              <span>{editingItem ? t('items.saveChanges') : t('items.createItem')}</span>
             </button>
           </div>
         </form>

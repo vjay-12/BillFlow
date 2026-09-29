@@ -279,3 +279,19 @@ export async function shareReceiptPdf(
     return { success: false, method: 'download', message: err.message || 'Failed to generate PDF.' };
   }
 }
+
+/**
+ * Directly download receipt PDF file to user's device Downloads folder.
+ */
+export function downloadReceiptPdf(
+  bill: Bill,
+  profile: BusinessProfile,
+  isGstEnabled: boolean = true
+): { success: boolean; fileName: string } {
+  const doc = generateReceiptPdf(bill, profile, isGstEnabled);
+  const safeStoreName = (profile.name || 'Store').replace(/[^a-zA-Z0-9]/g, '_');
+  const fileName = `Bill_${bill.billNo}_${safeStoreName}.pdf`;
+  doc.save(fileName);
+  return { success: true, fileName };
+}
+

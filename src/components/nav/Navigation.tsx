@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   ReceiptText, 
   History, 
@@ -12,16 +13,17 @@ import type { ActiveTab } from '../../types';
 import { useCartStore } from '../../stores/cartStore';
 
 export const Navigation: React.FC = () => {
+  const { t } = useTranslation();
   const { activeTab, setActiveTab } = useUIStore();
   const totalCartCount = useCartStore((s) => s.getTotalItemsCount());
 
   const navItems: { id: ActiveTab; label: string; mobileLabel: string; icon: React.FC<any>; badge?: number }[] = [
-    { id: 'billing', label: 'Billing POS', mobileLabel: 'Billing', icon: ReceiptText, badge: totalCartCount > 0 ? totalCartCount : undefined },
-    { id: 'history', label: 'History', mobileLabel: 'History', icon: History },
-    { id: 'items', label: 'Menu & Items', mobileLabel: 'Menu', icon: UtensilsCrossed },
-    { id: 'customers', label: 'Customers', mobileLabel: 'Customers', icon: Users },
-    { id: 'reports', label: 'Reports', mobileLabel: 'Reports', icon: BarChart3 },
-    { id: 'settings', label: 'Settings', mobileLabel: 'Settings', icon: Settings },
+    { id: 'billing', label: t('nav.billing'), mobileLabel: t('nav.billingShort'), icon: ReceiptText, badge: totalCartCount > 0 ? totalCartCount : undefined },
+    { id: 'history', label: t('nav.history'), mobileLabel: t('nav.history'), icon: History },
+    { id: 'items', label: t('nav.items'), mobileLabel: t('nav.itemsShort'), icon: UtensilsCrossed },
+    { id: 'customers', label: t('nav.customers'), mobileLabel: t('nav.customers'), icon: Users },
+    { id: 'reports', label: t('nav.reports'), mobileLabel: t('nav.reports'), icon: BarChart3 },
+    { id: 'settings', label: t('nav.settings'), mobileLabel: t('nav.settings'), icon: Settings },
   ];
 
   return (

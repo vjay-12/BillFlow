@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ShoppingBag, ChevronRight } from 'lucide-react';
 import { useCartStore } from '../../stores/cartStore';
 import { formatCurrency } from '../../lib/formatters';
 
 export const StickyCartBar: React.FC = () => {
+  const { t } = useTranslation();
   const itemsCount = useCartStore((s) => s.getTotalItemsCount());
   const total = useCartStore((s) => s.getTotal());
   const [isCartInView, setIsCartInView] = useState(false);
@@ -65,7 +67,7 @@ export const StickyCartBar: React.FC = () => {
       <button
         type="button"
         onClick={handleScrollToCart}
-        aria-label={`View bill with ${itemsCount} items totaling ${formatCurrency(total)}`}
+        aria-label={t('cart.viewBillAria', { count: itemsCount, total: formatCurrency(total) })}
         className="w-full bg-teal-800 hover:bg-teal-900 active:scale-[0.99] text-white px-3.5 py-2.5 rounded-2xl shadow-xl shadow-teal-950/25 flex items-center justify-between border border-teal-600/50 transition-all select-none cursor-pointer"
       >
         {/* Left: Item count & Running total */}
@@ -76,7 +78,7 @@ export const StickyCartBar: React.FC = () => {
           <div className="text-left truncate">
             <div className="flex items-center gap-1.5 leading-none">
               <span className="text-xs font-bold text-teal-100">
-                {itemsCount} {itemsCount === 1 ? 'item' : 'items'}
+                {itemsCount === 1 ? t('cart.itemCountSingular', { count: itemsCount }) : t('cart.itemCountPlural', { count: itemsCount })}
               </span>
               <span className="text-teal-400 font-bold">·</span>
               <span className="text-base font-extrabold font-mono text-white tracking-tight">
@@ -84,14 +86,14 @@ export const StickyCartBar: React.FC = () => {
               </span>
             </div>
             <div className="text-[10.5px] text-teal-200/90 font-medium mt-0.5 truncate">
-              Tap to review bill
+              {t('cart.tapToReviewBill')}
             </div>
           </div>
         </div>
 
         {/* Right: CTA */}
         <div className="flex items-center gap-1 font-extrabold text-xs sm:text-sm bg-white/15 hover:bg-white/25 active:bg-white/30 text-white px-3 py-1.5 rounded-xl border border-white/10 transition shadow-2xs shrink-0 ml-2">
-          <span>View Bill</span>
+          <span>{t('cart.viewBill')}</span>
           <ChevronRight className="w-4 h-4 stroke-[3]" />
         </div>
       </button>

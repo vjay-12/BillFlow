@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X, Save, User, Phone } from 'lucide-react';
 import { useUIStore } from '../../stores/uiStore';
 import { useCartStore } from '../../stores/cartStore';
@@ -6,6 +7,7 @@ import { customersRepo } from '../../db/customersRepo';
 import type { Customer } from '../../types';
 
 export const CustomerFormModal: React.FC = () => {
+  const { t } = useTranslation();
   const { isCustomerFormModalOpen, setIsCustomerFormModalOpen, editingCustomer, setEditingCustomer } = useUIStore();
 
   const [name, setName] = useState(editingCustomer?.name || '');
@@ -23,11 +25,11 @@ export const CustomerFormModal: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      alert('Please enter a customer name');
+      alert(t('customers.enterNameAlert'));
       return;
     }
     if (!phone.trim()) {
-      alert('Please enter a phone number');
+      alert(t('customers.enterPhoneAlert'));
       return;
     }
 
@@ -53,7 +55,7 @@ export const CustomerFormModal: React.FC = () => {
       setIsCustomerFormModalOpen(false);
       setEditingCustomer(null);
     } catch (err: any) {
-      alert(`Error saving customer: ${err.message}`);
+      alert(t('customers.errorSaving', { message: err.message }));
     }
   };
 
@@ -64,15 +66,16 @@ export const CustomerFormModal: React.FC = () => {
         <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
           <div>
             <h3 className="font-extrabold text-slate-800 text-base">
-              {editingCustomer ? 'Edit Customer' : 'Register New Customer'}
+              {editingCustomer ? t('customers.editCustomer') : t('customers.registerNewCustomer')}
             </h3>
             <p className="text-xs text-slate-500">
-              Manage customer profile and contact details
+              {t('customers.formSubtitle')}
             </p>
           </div>
           <button
             onClick={() => setIsCustomerFormModalOpen(false)}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition"
+            aria-label="Close modal"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -81,13 +84,13 @@ export const CustomerFormModal: React.FC = () => {
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-5 space-y-4 text-xs">
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Customer Full Name *</label>
+            <label className="block font-bold text-slate-700 mb-1">{t('customers.customerFullName')}</label>
             <div className="relative">
               <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 required
-                placeholder="e.g. Ramesh Kumar"
+                placeholder={t('customers.namePlaceholder')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white"
@@ -96,13 +99,13 @@ export const CustomerFormModal: React.FC = () => {
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Phone Number *</label>
+            <label className="block font-bold text-slate-700 mb-1">{t('customers.phoneNumber')}</label>
             <div className="relative">
               <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="tel"
                 required
-                placeholder="e.g. +91 98765 43210"
+                placeholder={t('customers.phonePlaceholder')}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white"
@@ -114,16 +117,16 @@ export const CustomerFormModal: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsCustomerFormModalOpen(false)}
-              className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-bold transition"
+              className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-bold transition cursor-pointer"
             >
-              Cancel
+              {t('customers.cancel')}
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold flex items-center gap-1.5 shadow-sm transition"
+              className="px-5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold flex items-center gap-1.5 shadow-sm transition cursor-pointer"
             >
               <Save className="w-4 h-4" />
-              <span>{editingCustomer ? 'Save Changes' : 'Register Customer'}</span>
+              <span>{editingCustomer ? t('customers.saveChanges') : t('customers.registerCustomer')}</span>
             </button>
           </div>
         </form>

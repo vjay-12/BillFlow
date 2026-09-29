@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { 
   TrendingUp, 
@@ -11,6 +12,7 @@ import { useCartStore } from '../../stores/cartStore';
 import { formatCurrency } from '../../lib/formatters';
 
 export const ReportsDashboard: React.FC = () => {
+  const { t } = useTranslation();
   const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'all'>('all');
 
   const profile = useLiveQuery(async () => {
@@ -102,10 +104,10 @@ export const ReportsDashboard: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
         <div>
           <h2 className="font-extrabold text-lg text-slate-800 tracking-tight">
-            Sales & Performance Reports
+            {t('reports.title')}
           </h2>
           <p className="text-xs text-slate-500">
-            Real-time business analytics, revenue breakdowns, and bestselling items
+            {t('reports.subtitle')}
           </p>
         </div>
 
@@ -117,7 +119,7 @@ export const ReportsDashboard: React.FC = () => {
               timeFilter === 'today' ? 'bg-white text-slate-900 shadow-xs' : 'hover:text-slate-900'
             }`}
           >
-            Today
+            {t('reports.today')}
           </button>
           <button
             type="button"
@@ -126,7 +128,7 @@ export const ReportsDashboard: React.FC = () => {
               timeFilter === 'week' ? 'bg-white text-slate-900 shadow-xs' : 'hover:text-slate-900'
             }`}
           >
-            Last 7 Days
+            {t('reports.last7Days')}
           </button>
           <button
             type="button"
@@ -135,7 +137,7 @@ export const ReportsDashboard: React.FC = () => {
               timeFilter === 'all' ? 'bg-white text-slate-900 shadow-xs' : 'hover:text-slate-900'
             }`}
           >
-            All Time
+            {t('reports.allTime')}
           </button>
         </div>
       </div>
@@ -146,7 +148,7 @@ export const ReportsDashboard: React.FC = () => {
         <div className="bg-gradient-to-br from-teal-800 to-teal-700 text-white rounded-2xl p-4 shadow-sm relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-teal-200 uppercase tracking-wider">
-              Total Revenue
+              {t('reports.totalRevenue')}
             </span>
             <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
               <TrendingUp className="w-4 h-4 text-teal-100" />
@@ -157,11 +159,11 @@ export const ReportsDashboard: React.FC = () => {
           </div>
           {isGstEnabled && stats.totalTax > 0 ? (
             <div className="text-[11px] text-teal-200/80 mt-1">
-              GST Collected: {formatCurrency(stats.totalTax)}
+              {t('reports.gstCollected', { amount: formatCurrency(stats.totalTax) })}
             </div>
           ) : (
             <div className="text-[11px] text-teal-200/80 mt-1">
-              {stats.ordersCount} settled transactions
+              {t('reports.settledTransactions', { count: stats.ordersCount })}
             </div>
           )}
         </div>
@@ -170,7 +172,7 @@ export const ReportsDashboard: React.FC = () => {
         <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Total Orders
+              {t('reports.totalOrders')}
             </span>
             <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center">
               <ShoppingBag className="w-4 h-4" />
@@ -179,14 +181,14 @@ export const ReportsDashboard: React.FC = () => {
           <div className="text-2xl lg:text-3xl font-extrabold font-mono text-slate-900 tracking-tight mt-2">
             {stats.ordersCount}
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">Settled transactions</div>
+          <div className="text-[11px] text-slate-400 mt-1">{t('reports.settledTransactionsSub')}</div>
         </div>
 
         {/* Average Order Value (AOV) */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Average Order Value
+              {t('reports.averageOrderValue')}
             </span>
             <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
               <DollarSign className="w-4 h-4" />
@@ -195,14 +197,14 @@ export const ReportsDashboard: React.FC = () => {
           <div className="text-2xl lg:text-3xl font-extrabold font-mono text-slate-900 tracking-tight mt-2">
             {formatCurrency(stats.avgOrderValue)}
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">Per checkout bill</div>
+          <div className="text-[11px] text-slate-400 mt-1">{t('reports.perCheckoutBill')}</div>
         </div>
 
         {/* Discounts Granted */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Total Discounts
+              {t('reports.totalDiscounts')}
             </span>
             <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
               <Award className="w-4 h-4" />
@@ -211,7 +213,7 @@ export const ReportsDashboard: React.FC = () => {
           <div className="text-2xl lg:text-3xl font-extrabold font-mono text-slate-900 tracking-tight mt-2">
             {formatCurrency(stats.totalDiscount)}
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">Customer loyalty savings</div>
+          <div className="text-[11px] text-slate-400 mt-1">{t('reports.customerLoyaltySavings')}</div>
         </div>
       </div>
 
@@ -220,8 +222,8 @@ export const ReportsDashboard: React.FC = () => {
         {/* Payment Methods Breakdown */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-extrabold text-sm text-slate-800">Payment Modes Breakdown</h3>
-            <span className="text-xs text-slate-400 font-mono">By Revenue</span>
+            <h3 className="font-extrabold text-sm text-slate-800">{t('reports.paymentModesBreakdown')}</h3>
+            <span className="text-xs text-slate-400 font-mono">{t('reports.byRevenue')}</span>
           </div>
 
           <div className="space-y-3">
@@ -233,7 +235,7 @@ export const ReportsDashboard: React.FC = () => {
               return (
                 <div key={item.mode} className="space-y-1">
                   <div className="flex items-center justify-between text-xs font-semibold">
-                    <span className="text-slate-700">{item.mode}</span>
+                    <span className="text-slate-700">{item.mode === 'Cash' ? t('payment.cash') : t('common.upi')}</span>
                     <span className="font-mono text-slate-900">
                       {formatCurrency(item.amount)} ({pct.toFixed(0)}%)
                     </span>
@@ -253,8 +255,8 @@ export const ReportsDashboard: React.FC = () => {
         {/* Order Types Breakdown */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-extrabold text-sm text-slate-800">Order Channels</h3>
-            <span className="text-xs text-slate-400 font-mono">By Volume</span>
+            <h3 className="font-extrabold text-sm text-slate-800">{t('reports.orderChannels')}</h3>
+            <span className="text-xs text-slate-400 font-mono">{t('reports.byVolume')}</span>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -264,12 +266,12 @@ export const ReportsDashboard: React.FC = () => {
                 className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-center"
               >
                 <span className="text-xs font-bold text-slate-500 uppercase block mb-1">
-                  {type}
+                  {type === 'Dine-in' ? t('cart.dineIn') : t('cart.takeaway')}
                 </span>
                 <span className="text-2xl font-extrabold font-mono text-slate-900 block">
                   {count}
                 </span>
-                <span className="text-[10px] text-slate-400 font-medium">orders</span>
+                <span className="text-[10px] text-slate-400 font-medium">{t('reports.orders')}</span>
               </div>
             ))}
           </div>
@@ -278,7 +280,7 @@ export const ReportsDashboard: React.FC = () => {
 
       {/* Top Selling Products */}
       <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-3">
-        <h3 className="font-extrabold text-sm text-slate-800">Top Selling Products</h3>
+        <h3 className="font-extrabold text-sm text-slate-800">{t('reports.topSellingProducts')}</h3>
 
         {stats.topItems.length > 0 ? (
           <div className="divide-y divide-slate-100 dark:divide-[#3D2C20]">
@@ -290,7 +292,7 @@ export const ReportsDashboard: React.FC = () => {
                   </span>
                   <div>
                     <span className="font-bold text-slate-900 block">{item.name}</span>
-                    <span className="text-[11px] text-slate-400">{item.qty} units sold</span>
+                    <span className="text-[11px] text-slate-400">{t('reports.unitsSold', { count: item.qty })}</span>
                   </div>
                 </div>
                 <div className="text-right font-mono font-extrabold text-slate-900 text-sm">
@@ -301,7 +303,7 @@ export const ReportsDashboard: React.FC = () => {
           </div>
         ) : (
           <div className="py-6 text-center text-slate-400 text-xs">
-            No sales data recorded yet.
+            {t('reports.noSalesData')}
           </div>
         )}
       </div>

@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { 
   ShoppingBag, 
@@ -20,6 +21,7 @@ import { formatCurrency } from '../../lib/formatters';
 import { useTabletLandscape } from '../../lib/useTabletLandscape';
 
 export const CartSidebar: React.FC = () => {
+  const { t } = useTranslation();
   const isTabletLandscape = useTabletLandscape();
   const {
     lines,
@@ -81,9 +83,9 @@ export const CartSidebar: React.FC = () => {
             <ShoppingBag className="w-4 h-4 stroke-[2.2]" />
           </div>
           <div>
-            <h3 className="font-extrabold text-slate-800 text-sm">Active Order</h3>
+            <h3 className="font-extrabold text-slate-800 text-sm">{t('cart.activeOrder')}</h3>
             <span className="text-[11px] font-semibold text-slate-500">
-              {itemsCount} {itemsCount === 1 ? 'item' : 'items'} in bill
+              {itemsCount === 1 ? t('cart.itemCountSingular', { count: itemsCount }) : t('cart.itemCountPlural', { count: itemsCount })}
             </span>
           </div>
         </div>
@@ -91,13 +93,13 @@ export const CartSidebar: React.FC = () => {
         {lines.length > 0 && (
           <button
             onClick={() => {
-              if (confirm('Clear current order cart?')) {
+              if (confirm(t('cart.clearConfirm'))) {
                 clearCart();
               }
             }}
             className="text-xs font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2 py-1 rounded-lg transition"
           >
-            Clear
+            {t('cart.clear')}
           </button>
         )}
       </div>
@@ -115,7 +117,7 @@ export const CartSidebar: React.FC = () => {
             }`}
           >
             <Utensils className="w-3.5 h-3.5" />
-            <span>Dine-in</span>
+            <span>{t('cart.dineIn')}</span>
           </button>
           <button
             type="button"
@@ -127,22 +129,22 @@ export const CartSidebar: React.FC = () => {
             }`}
           >
             <Package className="w-3.5 h-3.5" />
-            <span>Takeaway</span>
+            <span>{t('cart.takeaway')}</span>
           </button>
         </div>
 
         {/* Table selector for Dine-in */}
         {orderType === 'Dine-in' && (
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-500 font-medium">Table / Seat:</span>
+          <div className="flex items-center justify-between py-0.5">
+            <span className="text-slate-600 dark:text-[#B8A990] font-semibold text-xs sm:text-sm">{t('cart.tableSeat')}</span>
             <select
               value={table}
               onChange={(e) => setTable(e.target.value)}
-              className="bg-slate-100 text-slate-800 font-bold px-2 py-1 rounded-lg border border-slate-200 text-xs focus:ring-1 focus:ring-teal-600"
+              className="bg-slate-100 dark:bg-[#271C15] text-slate-800 dark:text-[#F5F0E6] font-bold px-3 py-1.5 rounded-xl border border-slate-300 dark:border-[#3D2C20] text-xs sm:text-sm focus:ring-2 focus:ring-teal-600 focus:outline-none cursor-pointer shadow-2xs min-w-[125px]"
             >
-              {tables.map((t) => (
-                <option key={t} value={t}>
-                  {t}
+              {tables.map((tbl) => (
+                <option key={tbl} value={tbl}>
+                  {tbl.startsWith('Table ') ? `${t('cart.tablePrefix')} ${tbl.replace('Table ', '')}` : tbl}
                 </option>
               ))}
             </select>
@@ -161,7 +163,7 @@ export const CartSidebar: React.FC = () => {
                 <span className="text-xs font-bold text-teal-900 truncate">{customer.name}</span>
                 <span className="text-[10px] text-teal-600 font-medium shrink-0">{customer.phone}</span>
               </div>
-              <span className="text-[10px] font-bold text-teal-700 shrink-0 ml-1.5">Change</span>
+              <span className="text-[10px] font-bold text-teal-700 shrink-0 ml-1.5">{t('cart.changeCustomer')}</span>
             </div>
           ) : (
             <button
@@ -169,7 +171,7 @@ export const CartSidebar: React.FC = () => {
               className="flex-1 flex items-center justify-center gap-1.5 border border-dashed border-slate-300 hover:border-teal-500 hover:text-teal-700 rounded-xl py-1.5 text-xs text-slate-500 font-semibold transition cursor-pointer"
             >
               <User className="w-3.5 h-3.5" />
-              <span>Attach Customer (Loyalty)</span>
+              <span>{t('cart.attachCustomer')}</span>
             </button>
           )}
         </div>
@@ -180,9 +182,9 @@ export const CartSidebar: React.FC = () => {
         {lines.length === 0 ? (
           <div className="h-full py-6 flex flex-col items-center justify-center text-center p-6 text-slate-400">
             <ShoppingBag className="w-12 h-12 stroke-[1.2] text-slate-300 mb-2" />
-            <p className="font-semibold text-slate-600 text-sm">Cart is empty</p>
+            <p className="font-semibold text-slate-600 text-sm">{t('cart.cartEmpty')}</p>
             <p className="text-xs text-slate-400 mt-1 max-w-[220px]">
-              Tap any item on the left grid to add it to this bill.
+              {t('cart.tapAnyItemSub')}
             </p>
           </div>
         ) : (
@@ -202,7 +204,7 @@ export const CartSidebar: React.FC = () => {
                       {displayName}
                     </div>
                     <div className="text-[11px] font-mono text-slate-500 mt-0.5">
-                      {formatCurrency(line.price)} each
+                      {formatCurrency(line.price)} {t('cart.each')}
                     </div>
                   </div>
 
@@ -224,7 +226,7 @@ export const CartSidebar: React.FC = () => {
                   className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-teal-700"
                 >
                   <FileEdit className="w-3 h-3" />
-                  <span>{line.note ? `Note: "${line.note}"` : '+ Note'}</span>
+                  <span>{line.note ? t('cart.note', { note: line.note }) : t('cart.addNote')}</span>
                 </button>
 
                 <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg p-0.5 shadow-2xs">
@@ -255,7 +257,7 @@ export const CartSidebar: React.FC = () => {
                 <div className="mt-2 pt-1.5 border-t border-dashed border-slate-200 flex items-center gap-1.5">
                   <input
                     type="text"
-                    placeholder="e.g. Less spicy, Extra ketchup..."
+                    placeholder={t('cart.notePlaceholder')}
                     value={line.note || ''}
                     onChange={(e) => updateNote(line.itemId, e.target.value)}
                     className="flex-1 bg-white text-xs px-2 py-1 rounded border border-slate-200 focus:outline-none focus:ring-1 focus:ring-teal-600"
@@ -286,7 +288,7 @@ export const CartSidebar: React.FC = () => {
             className="flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 cursor-pointer"
           >
             <Tag className="w-3.5 h-3.5" />
-            <span>{discountAmount > 0 ? `Discount Applied` : `+ Add Discount`}</span>
+            <span>{discountAmount > 0 ? t('cart.discountApplied') : t('cart.addDiscount')}</span>
           </button>
           {discountAmount > 0 && (
             <span className="font-bold font-mono text-amber-600 dark:text-amber-400 shrink-0 ml-2">
@@ -305,7 +307,7 @@ export const CartSidebar: React.FC = () => {
                   discountType === 'fixed' ? 'bg-white dark:bg-[#2E2119] shadow-xs text-slate-800 dark:text-[#F5F0E6]' : 'text-slate-500'
                 }`}
               >
-                ₹ Flat
+                {t('cart.flat')}
               </button>
               <button
                 type="button"
@@ -314,7 +316,7 @@ export const CartSidebar: React.FC = () => {
                   discountType === 'percent' ? 'bg-white dark:bg-[#2E2119] shadow-xs text-slate-800 dark:text-[#F5F0E6]' : 'text-slate-500'
                 }`}
               >
-                %
+                {t('cart.percent')}
               </button>
             </div>
             <input
@@ -331,7 +333,7 @@ export const CartSidebar: React.FC = () => {
                 onClick={() => setDiscount('fixed', 0)}
                 className="text-[10px] text-rose-500 hover:underline shrink-0 cursor-pointer"
               >
-                Remove
+                {t('cart.remove')}
               </button>
             )}
           </div>
@@ -340,26 +342,26 @@ export const CartSidebar: React.FC = () => {
         {/* Totals Breakdown */}
         <div className="space-y-1.5 text-xs text-slate-600 dark:text-[#D4C7B5] pt-1 border-t border-slate-200 dark:border-[#3D2C20]">
           <div className="flex justify-between items-center">
-            <span>Subtotal</span>
+            <span>{t('cart.subtotal')}</span>
             <span className="font-mono font-semibold text-slate-800 dark:text-[#F5F0E6] shrink-0 ml-2">{formatCurrency(subtotal)}</span>
           </div>
 
           {discountAmount > 0 && (
             <div className="flex justify-between items-center text-amber-600 dark:text-amber-400 font-medium">
-              <span>Discount</span>
+              <span>{t('cart.discount')}</span>
               <span className="font-mono font-semibold shrink-0 ml-2">-{formatCurrency(discountAmount)}</span>
             </div>
           )}
 
           {isGstEnabled && taxAmount > 0 && (
             <div className="flex justify-between items-center">
-              <span className="text-slate-500 dark:text-[#B8A990]">GST</span>
+              <span className="text-slate-500 dark:text-[#B8A990]">{t('cart.gst')}</span>
               <span className="font-mono font-semibold text-slate-800 dark:text-[#F5F0E6] shrink-0 ml-2">{formatCurrency(taxAmount)}</span>
             </div>
           )}
 
           <div className="flex justify-between items-center text-sm font-extrabold text-slate-900 dark:text-[#F5F0E6] pt-1.5 border-t border-slate-200 dark:border-[#3D2C20]">
-            <span>Payable Total</span>
+            <span>{t('cart.payableTotal')}</span>
             <span className="font-mono text-teal-800 dark:text-[#14A89B] text-base sm:text-lg font-black shrink-0 ml-2">{formatCurrency(total)}</span>
           </div>
         </div>
@@ -376,9 +378,9 @@ export const CartSidebar: React.FC = () => {
           }`}
         >
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-            <span className="truncate">Proceed to Payment</span>
+            <span className="truncate">{t('cart.proceedToPayment')}</span>
             <span className="text-xs bg-teal-800/80 px-2 py-0.5 rounded-full font-mono shrink-0">
-              {itemsCount} {itemsCount === 1 ? 'item' : 'items'}
+              {itemsCount === 1 ? t('cart.itemCountSingular', { count: itemsCount }) : t('cart.itemCountPlural', { count: itemsCount })}
             </span>
           </div>
           <div className="flex items-center gap-1 font-mono text-base font-bold shrink-0 ml-2">

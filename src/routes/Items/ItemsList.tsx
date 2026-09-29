@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { 
   Plus, 
@@ -15,6 +16,7 @@ import { formatCurrency } from '../../lib/formatters';
 import type { Item } from '../../types';
 
 export const ItemsList: React.FC = () => {
+  const { t } = useTranslation();
   const { setIsItemFormModalOpen, setEditingItem } = useUIStore();
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState('All');
@@ -91,10 +93,10 @@ export const ItemsList: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
         <div>
           <h2 className="font-extrabold text-lg text-slate-800 tracking-tight">
-            Menu Catalog
+            {t('items.catalogTitle')}
           </h2>
           <p className="text-xs text-slate-500">
-            Manage your menu items and pricing.
+            {t('items.catalogSubtitle')}
           </p>
         </div>
 
@@ -107,15 +109,15 @@ export const ItemsList: React.FC = () => {
                 : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
             }`}
           >
-            {showArchived ? 'Showing Archived' : 'View Archived'}
+            {showArchived ? t('items.showingArchived') : t('items.viewArchived')}
           </button>
 
           <button
             onClick={handleAddNew}
-            className="flex items-center gap-1.5 px-4 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-xl text-xs font-bold shadow-xs transition"
+            className="flex items-center gap-1.5 px-4 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-xl text-xs font-bold shadow-xs transition cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
-            <span>Add Item</span>
+            <span>{t('items.addItem')}</span>
           </button>
         </div>
       </div>
@@ -128,13 +130,13 @@ export const ItemsList: React.FC = () => {
             <button
               key={cat}
               onClick={() => setSelectedCat(cat)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition cursor-pointer ${
                 selectedCat === cat
                   ? 'bg-teal-700 text-white shadow-2xs'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
-              {cat}
+              {t(`common.categories.${cat}`, { defaultValue: cat })}
             </button>
           ))}
         </div>
@@ -144,7 +146,7 @@ export const ItemsList: React.FC = () => {
           <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search items..."
+            placeholder={t('items.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-8 pr-3 py-2 sm:py-1.5 text-xs bg-slate-100 rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-teal-600 focus:bg-white transition"
@@ -191,7 +193,7 @@ export const ItemsList: React.FC = () => {
                   <div className="shrink-0 text-right font-mono font-extrabold text-slate-900 text-sm">
                     {item.price === 0 ? (
                       <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                        Set price
+                        {t('items.setPrice')}
                       </span>
                     ) : (
                       formatCurrency(item.price)
@@ -210,10 +212,10 @@ export const ItemsList: React.FC = () => {
                 <div className="pl-[22px] flex items-center justify-between gap-2 pt-0.5">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="bg-slate-100 px-2 py-0.5 rounded-md text-slate-700 text-[10px] font-bold">
-                      {item.category}
+                      {t(`common.categories.${item.category}`, { defaultValue: item.category })}
                     </span>
                     <span className="text-slate-400 text-[10px]">
-                      {item.isVeg ? 'Vegetarian' : 'Non-Veg'}
+                      {item.isVeg ? t('items.vegetarian') : t('items.nonVegetarian')}
                     </span>
                   </div>
 
@@ -221,17 +223,17 @@ export const ItemsList: React.FC = () => {
                   <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => handleEdit(item)}
-                      aria-label="Edit Item"
-                      title="Edit Item"
-                      className="p-1.5 rounded-lg text-slate-600 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 transition"
+                      aria-label={t('items.editItem')}
+                      title={t('items.editItem')}
+                      className="p-1.5 rounded-lg text-slate-600 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 transition cursor-pointer"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleToggleArchive(item)}
-                      aria-label={item.active ? 'Archive Item' : 'Restore Item'}
-                      title={item.active ? 'Archive Item' : 'Restore Item'}
-                      className={`p-1.5 rounded-lg transition ${
+                      aria-label={item.active ? t('items.archiveItem') : t('items.restoreItem')}
+                      title={item.active ? t('items.archiveItem') : t('items.restoreItem')}
+                      className={`p-1.5 rounded-lg transition cursor-pointer ${
                         item.active
                           ? 'text-amber-700 bg-amber-50 hover:bg-amber-100 active:bg-amber-200'
                           : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200'
@@ -255,11 +257,11 @@ export const ItemsList: React.FC = () => {
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-semibold text-[10px] tracking-wider">
                   <tr>
-                    <th className="py-3 px-4">Item Details</th>
-                    <th className="py-3 px-4">Category</th>
-                    <th className="py-3 px-4">SKU / Code</th>
-                    <th className="py-3 px-4">Price</th>
-                    <th className="py-3 px-4 text-right">Actions</th>
+                    <th className="py-3 px-4">{t('items.itemDetails')}</th>
+                    <th className="py-3 px-4">{t('items.category')}</th>
+                    <th className="py-3 px-4">{t('items.skuCode')}</th>
+                    <th className="py-3 px-4">{t('items.price')}</th>
+                    <th className="py-3 px-4 text-right">{t('items.actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-[#3D2C20] font-medium text-slate-700">
@@ -288,7 +290,7 @@ export const ItemsList: React.FC = () => {
                               </span>
                             )}
                             <span className="text-[10px] text-slate-400 block truncate">
-                              {item.isVeg ? 'Vegetarian' : 'Non-Veg'}
+                              {item.isVeg ? t('items.vegetarian') : t('items.nonVegetarian')}
                             </span>
                           </div>
                         </div>
@@ -296,7 +298,7 @@ export const ItemsList: React.FC = () => {
 
                       <td className="py-3 px-4">
                         <span className="bg-slate-100 px-2 py-0.5 rounded-md text-slate-700 text-[11px] font-semibold">
-                          {item.category}
+                          {t(`common.categories.${item.category}`, { defaultValue: item.category })}
                         </span>
                       </td>
 
@@ -307,7 +309,7 @@ export const ItemsList: React.FC = () => {
                       <td className="py-3 px-4 font-mono font-extrabold text-slate-900 text-sm">
                         {item.price === 0 ? (
                           <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                            Set price
+                            {t('items.setPrice')}
                           </span>
                         ) : (
                           formatCurrency(item.price)
@@ -318,15 +320,17 @@ export const ItemsList: React.FC = () => {
                         <div className="flex items-center justify-end gap-1.5">
                           <button
                             onClick={() => handleEdit(item)}
-                            title="Edit Item"
-                            className="p-1.5 rounded-lg text-slate-600 bg-slate-100 hover:bg-slate-200 transition"
+                            title={t('items.editItem')}
+                            aria-label={t('items.editItem')}
+                            className="p-1.5 rounded-lg text-slate-600 bg-slate-100 hover:bg-slate-200 transition cursor-pointer"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleToggleArchive(item)}
-                            title={item.active ? 'Archive Item' : 'Restore Item'}
-                            className={`p-1.5 rounded-lg transition ${
+                            title={item.active ? t('items.archiveItem') : t('items.restoreItem')}
+                            aria-label={item.active ? t('items.archiveItem') : t('items.restoreItem')}
+                            className={`p-1.5 rounded-lg transition cursor-pointer ${
                               item.active
                                 ? 'text-amber-700 bg-amber-50 hover:bg-amber-100'
                                 : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'
@@ -350,9 +354,9 @@ export const ItemsList: React.FC = () => {
       ) : (
         <div className="p-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
           <Package className="w-12 h-12 stroke-[1.2] text-slate-300 mx-auto mb-2" />
-          <p className="font-semibold text-slate-600">No items in this filter</p>
+          <p className="font-semibold text-slate-600">{t('items.noItemsFilter')}</p>
           <p className="text-xs text-slate-400 mt-1">
-            Add new dishes using the "Add Item" button above.
+            {t('items.noItemsFilterSub')}
           </p>
         </div>
       )}
@@ -367,10 +371,10 @@ export const ItemsList: React.FC = () => {
               </div>
               <div className="space-y-1">
                 <h3 className="font-extrabold text-slate-900 text-sm">
-                  Archive {itemToArchive.name}?
+                  {t('items.archiveModalTitle', { name: itemToArchive.name })}
                 </h3>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  It will be hidden from billing but kept in past records.
+                  {t('items.archiveModalDesc')}
                 </p>
               </div>
             </div>
@@ -381,14 +385,14 @@ export const ItemsList: React.FC = () => {
                 onClick={() => setItemToArchive(null)}
                 className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 font-bold text-xs transition cursor-pointer"
               >
-                Cancel
+                {t('items.cancel')}
               </button>
               <button
                 type="button"
                 onClick={confirmArchive}
                 className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white font-bold text-xs shadow-xs transition cursor-pointer"
               >
-                Archive
+                {t('items.archive')}
               </button>
             </div>
           </div>
