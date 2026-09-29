@@ -15,9 +15,11 @@ import {
 import { useCartStore } from '../../stores/cartStore';
 import { useUIStore } from '../../stores/uiStore';
 import { formatCurrency } from '../../lib/formatters';
+import { useTabletLandscape } from '../../lib/useTabletLandscape';
 import { CustomerSelectModal } from '../customers/CustomerSelectModal';
 
 export const CartSidebar: React.FC = () => {
+  const isTabletLandscape = useTabletLandscape();
   const {
     lines,
     orderType,
@@ -250,7 +252,9 @@ export const CartSidebar: React.FC = () => {
       </div>
 
       {/* Bill Calculation Summary & Checkout */}
-      <div className="shrink-0 p-3.5 sm:p-4 bg-slate-50 dark:bg-[#271C15] border-t border-slate-200 dark:border-[#3D2C20] space-y-2.5 pb-24 md:pb-4">
+      <div className={`shrink-0 p-3.5 sm:p-4 bg-slate-50 dark:bg-[#271C15] border-t border-slate-200 dark:border-[#3D2C20] space-y-2.5 ${
+        isTabletLandscape ? 'pb-4' : 'pb-24'
+      }`}>
         {/* Discount Bar */}
         <div className="flex items-center justify-between text-xs">
           <button

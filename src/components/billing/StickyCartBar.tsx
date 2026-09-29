@@ -15,22 +15,30 @@ export const StickyCartBar: React.FC = () => {
 
     const checkVisibility = () => {
       const rect = cartSection.getBoundingClientRect();
-      // Hide sticky bar when cart section is scrolled into view
-      const inView = rect.top < window.innerHeight - 80 && rect.bottom > 80;
+      // Hide sticky bar when cart section has scrolled up substantially into view
+      // (meaning the user is looking directly at the cart/checkout section)
+      const inView = rect.top < window.innerHeight * 0.45 && rect.bottom > 80;
       setIsCartInView(inView);
     };
 
     checkVisibility();
 
-    const target = scrollContainer || window;
-    target.addEventListener('scroll', checkVisibility, { passive: true });
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', checkVisibility, { passive: true });
+    }
+    window.addEventListener('scroll', checkVisibility, { passive: true });
     window.addEventListener('resize', checkVisibility, { passive: true });
+    window.addEventListener('orientationchange', checkVisibility, { passive: true });
 
     return () => {
-      target.removeEventListener('scroll', checkVisibility);
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', checkVisibility);
+      }
+      window.removeEventListener('scroll', checkVisibility);
       window.removeEventListener('resize', checkVisibility);
+      window.removeEventListener('orientationchange', checkVisibility);
     };
-  }, []);
+  }, [itemsCount]);
 
   // When cart is empty or when the user is already looking at the cart/bill section,
   // hide the sticky bar so only the single "Proceed to Payment" button is visible
@@ -43,15 +51,15 @@ export const StickyCartBar: React.FC = () => {
       const containerRect = scrollContainer.getBoundingClientRect();
       const cartRect = cartSection.getBoundingClientRect();
       const targetScroll = scrollContainer.scrollTop + (cartRect.top - containerRect.top);
-      scrollContainer.scrollTo({ top: targetScroll, behavior: 'auto' });
+      scrollContainer.scrollTo({ top: targetScroll, behavior: 'smooth' });
     } else if (cartSection) {
-      cartSection.scrollIntoView({ behavior: 'auto', block: 'start' });
+      cartSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
   return (
     <div
-      className="md:hidden fixed left-3 right-3 z-30 transition-all duration-300 ease-out animate-in slide-in-from-bottom-5"
+      className="fixed left-3 right-3 sm:left-6 sm:right-6 md:left-1/2 md:-translate-x-1/2 md:w-[calc(100%-48px)] md:max-w-2xl z-30 transition-all duration-300 ease-out animate-in slide-in-from-bottom-5"
       style={{ bottom: 'calc(56px + max(8px, env(safe-area-inset-bottom)))' }}
     >
       <button

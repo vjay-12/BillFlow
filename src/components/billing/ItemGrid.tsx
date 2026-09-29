@@ -114,7 +114,9 @@ export const ItemGrid: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col w-full lg:h-full lg:overflow-hidden bg-slate-50">
+    <div className={`flex flex-col w-full bg-slate-50 dark:bg-[#211712] ${
+      isTabletLandscape ? 'h-full overflow-hidden' : 'shrink-0'
+    }`}>
       {/* Filters Bar: Categories, Search & Diet Filters */}
       <div className="p-3 bg-white border-b border-slate-200 space-y-2 shrink-0 sticky top-0 z-10 shadow-2xs">
         {/* Mobile-Only Search Input */}
@@ -210,8 +212,12 @@ export const ItemGrid: React.FC = () => {
         </div>
       </div>
 
-      {/* Item Grid - Tappable 2-column cards on mobile, 3 columns on tablet landscape */}
-      <div className={`p-3 lg:flex-1 lg:overflow-y-auto ${cartLines.length > 0 ? 'pb-32' : 'pb-16'} lg:pb-3`}>
+      {/* Item Grid - Tappable cards: 2-3 columns on mobile/tablet portrait, 3 columns on tablet landscape */}
+      <div className={`p-3 ${
+        isTabletLandscape 
+          ? 'flex-1 overflow-y-auto pb-3' 
+          : `${cartLines.length > 0 ? 'pb-32' : 'pb-16'}`
+      }`}>
         {items === undefined ? (
           /* Graceful Loading Skeleton */
           <div className={
