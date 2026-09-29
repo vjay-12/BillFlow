@@ -18,6 +18,7 @@ import { PaymentModal } from './components/billing/PaymentModal';
 import { ReceiptModal } from './components/billing/ReceiptModal';
 import { ItemFormModal } from './components/items/ItemFormModal';
 import { CustomerFormModal } from './components/customers/CustomerFormModal';
+import { CustomerSelectModal } from './components/customers/CustomerSelectModal';
 
 export function App() {
   const { activeTab, setActiveTab, setIsPaymentModalOpen } = useUIStore();
@@ -110,6 +111,7 @@ export function App() {
       <ReceiptModal />
       <ItemFormModal />
       <CustomerFormModal />
+      <CustomerSelectModal />
     </div>
   );
 }

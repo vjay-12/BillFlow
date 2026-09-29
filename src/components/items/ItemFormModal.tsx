@@ -1,11 +1,15 @@
 import { useState } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { X, Save, Leaf, Flame } from 'lucide-react';
+import { db } from '../../db/schema';
 import { useUIStore } from '../../stores/uiStore';
 import { itemsRepo } from '../../db/itemsRepo';
 import type { Item } from '../../types';
 
 export const ItemFormModal: React.FC = () => {
   const { isItemFormModalOpen, setIsItemFormModalOpen, editingItem, setEditingItem } = useUIStore();
+  const profile = useLiveQuery(() => db.businessProfile.get('main'), []);
+  const showNonVeg = profile?.showNonVeg !== false;
 
   const [name, setName] = useState(editingItem?.name || '');
   const [nameTamil, setNameTamil] = useState(editingItem?.nameTamil || '');
@@ -44,6 +48,8 @@ export const ItemFormModal: React.FC = () => {
     }
 
     try {
+      const finalIsVeg = showNonVeg ? isVeg : true;
+
       if (editingItem) {
         await itemsRepo.update(editingItem.id, {
           name,
@@ -51,7 +57,7 @@ export const ItemFormModal: React.FC = () => {
           code,
           category,
           price: Number(price),
-          isVeg,
+          isVeg: finalIsVeg,
         });
       } else {
         const newItem: Item = {
@@ -62,7 +68,7 @@ export const ItemFormModal: React.FC = () => {
           category,
           price: Number(price),
           taxPercent: 5,
-          isVeg,
+          isVeg: finalIsVeg,
           active: true,
         };
         await itemsRepo.create(newItem);
@@ -169,36 +175,38 @@ export const ItemFormModal: React.FC = () => {
             <p className="text-[10px] text-slate-400 mt-1">Set to 0 if price will be entered at time of billing.</p>
           </div>
 
-          {/* Veg / Non-Veg Toggle */}
-          <div>
-            <label className="block font-bold text-slate-700 mb-1.5">Dietary Type</label>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setIsVeg(true)}
-                className={`flex-1 py-2 px-3 rounded-xl border flex items-center justify-center gap-1.5 font-bold transition ${
-                  isVeg
-                    ? 'bg-emerald-50 border-emerald-500 text-emerald-800 ring-2 ring-emerald-500/20'
-                    : 'bg-slate-50 border-slate-200 text-slate-600'
-                }`}
-              >
-                <Leaf className="w-4 h-4 text-emerald-600" />
-                <span>Vegetarian</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsVeg(false)}
-                className={`flex-1 py-2 px-3 rounded-xl border flex items-center justify-center gap-1.5 font-bold transition ${
-                  !isVeg
-                    ? 'bg-rose-50 border-rose-500 text-rose-800 ring-2 ring-rose-500/20'
-                    : 'bg-slate-50 border-slate-200 text-slate-600'
-                }`}
-              >
-                <Flame className="w-4 h-4 text-rose-600" />
-                <span>Non-Vegetarian</span>
-              </button>
+          {/* Veg / Non-Veg Toggle - only visible when Non-Veg items are enabled in Settings */}
+          {showNonVeg && (
+            <div>
+              <label className="block font-bold text-slate-700 mb-1.5">Dietary Type</label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsVeg(true)}
+                  className={`flex-1 py-2 px-3 rounded-xl border flex items-center justify-center gap-1.5 font-bold transition ${
+                    isVeg
+                      ? 'bg-emerald-50 border-emerald-500 text-emerald-800 ring-2 ring-emerald-500/20'
+                      : 'bg-slate-50 border-slate-200 text-slate-600'
+                  }`}
+                >
+                  <Leaf className="w-4 h-4 text-emerald-600" />
+                  <span>Vegetarian</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsVeg(false)}
+                  className={`flex-1 py-2 px-3 rounded-xl border flex items-center justify-center gap-1.5 font-bold transition ${
+                    !isVeg
+                      ? 'bg-rose-50 border-rose-500 text-rose-800 ring-2 ring-rose-500/20'
+                      : 'bg-slate-50 border-slate-200 text-slate-600'
+                  }`}
+                >
+                  <Flame className="w-4 h-4 text-rose-600" />
+                  <span>Non-Vegetarian</span>
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Footer Submit */}
           <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">

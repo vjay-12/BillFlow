@@ -44,6 +44,7 @@ export const INITIAL_BUSINESS_PROFILE: BusinessProfile = {
   enableGst: true,
   showNonVeg: true,
   menuLanguage: 'English',
+  tableCount: 10,
   paperWidth: '80mm',
   upiId: 'pasumaicafe@oksbi',
   upiQrCodeUrl: '',
@@ -291,6 +292,10 @@ export async function seedInitialDataIfNeeded() {
       }
       if (updatedProfile.menuLanguage === undefined) {
         updatedProfile.menuLanguage = 'English';
+        needsProfileSave = true;
+      }
+      if (updatedProfile.tableCount === undefined) {
+        updatedProfile.tableCount = 10;
         needsProfileSave = true;
       }
       if (needsProfileSave) {

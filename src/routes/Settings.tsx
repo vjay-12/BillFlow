@@ -16,7 +16,8 @@ import {
   QrCode,
   X,
   Languages,
-  UtensilsCrossed
+  UtensilsCrossed,
+  LayoutGrid
 } from 'lucide-react';
 import { db, INITIAL_BUSINESS_PROFILE } from '../db/schema';
 import { 
@@ -269,6 +270,36 @@ export const SettingsRoute: React.FC = () => {
             >
               தமிழ் (Tamil)
             </button>
+          </div>
+        </div>
+
+        {/* Setting 3: Number of Tables Configuration */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+          <div className="space-y-1 max-w-xl">
+            <div className="flex items-center gap-1.5">
+              <LayoutGrid className="w-4 h-4 text-teal-700" />
+              <span className="font-bold text-slate-900 text-sm">Number of Tables</span>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Configure total dining tables available for seating (e.g. Table 1 to Table N). Updates available options in the Table/Seat selector on the Billing screen immediately.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 shrink-0">
+            <input
+              type="number"
+              min="1"
+              max="100"
+              value={profile.tableCount ?? 10}
+              onChange={async (e) => {
+                const val = Math.max(1, Math.min(100, parseInt(e.target.value) || 1));
+                const updated = { ...profile, tableCount: val };
+                setProfile(updated);
+                await db.businessProfile.put({ ...updated, id: 'main' } as any);
+              }}
+              className="w-24 px-3 py-2 bg-white text-slate-800 rounded-xl border border-slate-300 font-mono font-bold text-sm text-center focus:outline-none focus:ring-2 focus:ring-teal-600"
+            />
+            <span className="text-xs font-bold text-slate-500">tables</span>
           </div>
         </div>
       </div>

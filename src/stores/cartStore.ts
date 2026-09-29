@@ -63,6 +63,7 @@ export const useCartStore = create<CartState>((set, get) => ({
           {
             itemId: item.id,
             name: item.name,
+            nameTamil: item.nameTamil,
             price: item.price,
             qty,
             taxPercent: item.taxPercent,

@@ -14,6 +14,7 @@ export interface Item {
 export interface BillLine {
   itemId: string;
   name: string;
+  nameTamil?: string;
   price: number;
   qty: number;
   taxPercent?: number;
@@ -66,6 +67,7 @@ export interface BusinessProfile {
   enableGst?: boolean;
   showNonVeg?: boolean;
   menuLanguage?: 'English' | 'Tamil';
+  tableCount?: number;
   paperWidth: '58mm' | '80mm';
   printerBluetoothName?: string;
   upiId?: string;

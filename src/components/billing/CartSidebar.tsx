@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { 
   ShoppingBag, 
   Trash2, 
@@ -12,11 +13,11 @@ import {
   FileEdit,
   Check
 } from 'lucide-react';
+import { db } from '../../db/schema';
 import { useCartStore } from '../../stores/cartStore';
 import { useUIStore } from '../../stores/uiStore';
 import { formatCurrency } from '../../lib/formatters';
 import { useTabletLandscape } from '../../lib/useTabletLandscape';
-import { CustomerSelectModal } from '../customers/CustomerSelectModal';
 
 export const CartSidebar: React.FC = () => {
   const isTabletLandscape = useTabletLandscape();
@@ -42,18 +43,34 @@ export const CartSidebar: React.FC = () => {
     getTotalItemsCount,
   } = useCartStore();
 
-  const { setIsPaymentModalOpen } = useUIStore();
-  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+  const { setIsPaymentModalOpen, setIsCustomerSelectModalOpen } = useUIStore();
   const [showDiscountInput, setShowDiscountInput] = useState(false);
   const [activeNoteItemId, setActiveNoteItemId] = useState<string | null>(null);
+
+  // Business profile for table count & Tamil menu display language
+  const profile = useLiveQuery(() => db.businessProfile.get('main'), []);
+  const menuLanguage = profile?.menuLanguage || 'English';
+
+  // Active items lookup to ensure immediate Tamil name resolution
+  const allItems = useLiveQuery(() => db.items.toArray(), []);
+  const itemMap = useMemo(() => new Map(allItems?.map((i) => [i.id, i])), [allItems]);
+
+  // Configurable table count: Only "Table 1" through "Table N" (defaults to 10)
+  const tableCount = profile?.tableCount && profile.tableCount > 0 ? profile.tableCount : 10;
+  const tables = useMemo(() => Array.from({ length: tableCount }, (_, i) => `Table ${i + 1}`), [tableCount]);
+
+  // Ensure selected table stays valid if table count is reduced in Settings
+  useEffect(() => {
+    if (tables.length > 0 && !tables.includes(table)) {
+      setTable(tables[0]);
+    }
+  }, [tables, table, setTable]);
 
   const subtotal = getSubtotal();
   const discountAmount = getDiscountAmount();
   const taxAmount = getTaxAmount();
   const total = getTotal();
   const itemsCount = getTotalItemsCount();
-
-  const tables = ['Table 1', 'Table 2', 'Table 3', 'Table 4', 'Table 5', 'Bar 1', 'Patio 2'];
 
   return (
     <aside className="w-full h-full bg-white dark:bg-[#2E2119] flex flex-col min-w-0 overflow-hidden shadow-lg z-20">
@@ -136,7 +153,7 @@ export const CartSidebar: React.FC = () => {
         <div className="pt-1 flex items-center justify-between">
           {customer ? (
             <div
-              onClick={() => setIsCustomerModalOpen(true)}
+              onClick={() => setIsCustomerSelectModalOpen(true)}
               className="flex-1 flex items-center justify-between bg-teal-50 border border-teal-200 rounded-xl px-2.5 py-1.5 cursor-pointer hover:bg-teal-100/70 transition min-w-0"
             >
               <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -148,7 +165,7 @@ export const CartSidebar: React.FC = () => {
             </div>
           ) : (
             <button
-              onClick={() => setIsCustomerModalOpen(true)}
+              onClick={() => setIsCustomerSelectModalOpen(true)}
               className="flex-1 flex items-center justify-center gap-1.5 border border-dashed border-slate-300 hover:border-teal-500 hover:text-teal-700 rounded-xl py-1.5 text-xs text-slate-500 font-semibold transition cursor-pointer"
             >
               <User className="w-3.5 h-3.5" />
@@ -169,20 +186,25 @@ export const CartSidebar: React.FC = () => {
             </p>
           </div>
         ) : (
-          lines.map((line) => (
-            <div
-              key={line.itemId}
-              className="bg-slate-50/80 rounded-xl p-2.5 border border-slate-200/80 hover:border-slate-300 transition"
-            >
-              <div className="flex items-start justify-between gap-2 min-w-0">
-                <div className="flex-1 min-w-0">
-                  <div className="font-bold text-xs sm:text-sm text-slate-800 leading-tight truncate" title={line.name}>
-                    {line.name}
+          lines.map((line) => {
+            const itemObj = itemMap.get(line.itemId);
+            const tamilName = line.nameTamil || itemObj?.nameTamil;
+            const displayName = (menuLanguage === 'Tamil' && tamilName) ? tamilName : line.name;
+
+            return (
+              <div
+                key={line.itemId}
+                className="bg-slate-50/80 rounded-xl p-2.5 border border-slate-200/80 hover:border-slate-300 transition"
+              >
+                <div className="flex items-start justify-between gap-2 min-w-0">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-xs sm:text-sm text-slate-800 leading-tight truncate" title={displayName}>
+                      {displayName}
+                    </div>
+                    <div className="text-[11px] font-mono text-slate-500 mt-0.5">
+                      {formatCurrency(line.price)} each
+                    </div>
                   </div>
-                  <div className="text-[11px] font-mono text-slate-500 mt-0.5">
-                    {formatCurrency(line.price)} each
-                  </div>
-                </div>
 
                 <div className="text-right shrink-0">
                   <div className="font-extrabold text-xs sm:text-sm font-mono text-slate-900">
@@ -247,9 +269,10 @@ export const CartSidebar: React.FC = () => {
                 </div>
               )}
             </div>
-          ))
-        )}
-      </div>
+          );
+        })
+      )}
+    </div>
 
       {/* Bill Calculation Summary & Checkout */}
       <div className={`shrink-0 p-3.5 sm:p-4 bg-slate-50 dark:bg-[#271C15] border-t border-slate-200 dark:border-[#3D2C20] space-y-2.5 ${
@@ -364,12 +387,6 @@ export const CartSidebar: React.FC = () => {
           </div>
         </button>
       </div>
-
-      {/* Customer Select Modal */}
-      <CustomerSelectModal
-        isOpen={isCustomerModalOpen}
-        onClose={() => setIsCustomerModalOpen(false)}
-      />
     </aside>
   );
 };

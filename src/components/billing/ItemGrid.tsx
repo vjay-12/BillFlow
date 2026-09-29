@@ -34,8 +34,13 @@ export const ItemGrid: React.FC = () => {
     return allActiveItems.filter((i) => i.isVeg !== false);
   }, [allActiveItems, showNonVeg]);
 
-  // Active diet filter: if non-veg is hidden, 'non-veg' filter naturally resolves to 'all'
-  const activeDietFilter = (!showNonVeg && dietFilter === 'non-veg') ? 'all' : dietFilter;
+  // Check if both Veg and Non-Veg items exist in the active menu
+  const hasNonVegItems = useMemo(() => allActiveItems?.some((i) => i.isVeg === false) ?? false, [allActiveItems]);
+  const hasVegItems = useMemo(() => allActiveItems?.some((i) => i.isVeg !== false) ?? false, [allActiveItems]);
+  const shouldShowDietFilter = showNonVeg && hasNonVegItems && hasVegItems;
+
+  // Active diet filter: if diet filter is hidden or non-veg disabled, resolve to 'all'
+  const activeDietFilter = (!shouldShowDietFilter || (!showNonVeg && dietFilter === 'non-veg')) ? 'all' : dietFilter;
 
   // Guarantee seed data exists if table is empty
   useEffect(() => {
@@ -164,33 +169,33 @@ export const ItemGrid: React.FC = () => {
           })}
         </div>
 
-        {/* Diet & Quick Toggle */}
-        <div className="flex items-center justify-between gap-2 pt-0.5 text-xs">
-          <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg">
-            <button
-              type="button"
-              onClick={() => setDietFilter('all')}
-              className={`px-2.5 py-1 rounded-md font-semibold transition cursor-pointer ${
-                activeDietFilter === 'all'
-                  ? 'bg-white text-slate-800 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              All Diet
-            </button>
-            <button
-              type="button"
-              onClick={() => setDietFilter('veg')}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-md font-semibold transition cursor-pointer ${
-                activeDietFilter === 'veg'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-500 hover:text-emerald-700'
-              }`}
-            >
-              <Leaf className="w-3 h-3" />
-              100% Veg
-            </button>
-            {showNonVeg && (
+        {/* Diet & Quick Toggle - only shown when both Veg and Non-Veg items exist and non-veg is enabled */}
+        {shouldShowDietFilter && (
+          <div className="flex items-center justify-between gap-2 pt-0.5 text-xs">
+            <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg">
+              <button
+                type="button"
+                onClick={() => setDietFilter('all')}
+                className={`px-2.5 py-1 rounded-md font-semibold transition cursor-pointer ${
+                  activeDietFilter === 'all'
+                    ? 'bg-white text-slate-800 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                All Diet
+              </button>
+              <button
+                type="button"
+                onClick={() => setDietFilter('veg')}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md font-semibold transition cursor-pointer ${
+                  activeDietFilter === 'veg'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-500 hover:text-emerald-700'
+                }`}
+              >
+                <Leaf className="w-3 h-3" />
+                100% Veg
+              </button>
               <button
                 type="button"
                 onClick={() => setDietFilter('non-veg')}
@@ -203,13 +208,13 @@ export const ItemGrid: React.FC = () => {
                 <Flame className="w-3 h-3" />
                 Non-Veg
               </button>
-            )}
-          </div>
+            </div>
 
-          <div className="text-slate-400 font-medium text-[11px] truncate">
-            {items === undefined ? 'Loading...' : `${filteredItems.length} of ${items.length} items`}
+            <div className="text-slate-400 font-medium text-[11px] truncate">
+              {items === undefined ? 'Loading...' : `${filteredItems.length} of ${items.length} items`}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Item Grid - Tappable cards: 2-3 columns on mobile/tablet portrait, 3 columns on tablet landscape */}

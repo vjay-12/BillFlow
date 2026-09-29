@@ -40,6 +40,9 @@ interface UIState {
   editingCustomer: Customer | null;
   setEditingCustomer: (customer: Customer | null) => void;
 
+  isCustomerSelectModalOpen: boolean;
+  setIsCustomerSelectModalOpen: (open: boolean) => void;
+
   // Theme
   isDarkMode: boolean;
   setDarkMode: (enabled: boolean) => void;
@@ -88,6 +91,9 @@ export const useUIStore = create<UIState>((set, get) => ({
   setIsCustomerFormModalOpen: (isCustomerFormModalOpen) => set({ isCustomerFormModalOpen }),
   editingCustomer: null,
   setEditingCustomer: (editingCustomer) => set({ editingCustomer }),
+
+  isCustomerSelectModalOpen: false,
+  setIsCustomerSelectModalOpen: (isCustomerSelectModalOpen) => set({ isCustomerSelectModalOpen }),
 
   isDarkMode: (() => {
     if (typeof window === 'undefined') return false;

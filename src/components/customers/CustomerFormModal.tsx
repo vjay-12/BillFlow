@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, Save, User, Phone } from 'lucide-react';
 import { useUIStore } from '../../stores/uiStore';
+import { useCartStore } from '../../stores/cartStore';
 import { customersRepo } from '../../db/customersRepo';
 import type { Customer } from '../../types';
 
@@ -46,6 +47,7 @@ export const CustomerFormModal: React.FC = () => {
           createdAt: Date.now(),
         };
         await customersRepo.create(newCust);
+        useCartStore.getState().setCustomer(newCust);
       }
 
       setIsCustomerFormModalOpen(false);
