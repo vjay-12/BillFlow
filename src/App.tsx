@@ -4,6 +4,8 @@ import { db, seedInitialDataIfNeeded } from './db/schema';
 import { checkAndAutoRestore } from './db/dataSafety';
 import { Header } from './components/nav/Header';
 import { Navigation } from './components/nav/Navigation';
+import { TabletSidebar } from './components/nav/TabletSidebar';
+import { useTabletLandscape } from './lib/useTabletLandscape';
 import { BillRoute } from './routes/Bill';
 import { BillList } from './routes/History/BillList';
 import { ItemsList } from './routes/Items/ItemsList';
@@ -77,23 +79,31 @@ export function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [cartLines, setIsPaymentModalOpen, setActiveTab]);
 
+  const isTabletLandscape = useTabletLandscape();
+
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-100 text-slate-800">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-100 dark:bg-[#211712] text-slate-800 dark:text-[#F5F0E6]">
       {/* Top Header */}
       <Header businessName={profile?.name} tagline={profile?.tagline} />
 
-      {/* Navigation tabs */}
-      <Navigation />
+      {/* Main Body: In tablet landscape, Left Collapsible Sidebar + Middle Content. In portrait/phone: full width content */}
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Left: Collapsible Sidebar (Tablet Landscape only) */}
+        {isTabletLandscape && <TabletSidebar />}
 
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col overflow-hidden relative pb-14 md:pb-0">
-        {activeTab === 'billing' && <BillRoute />}
-        {activeTab === 'history' && <BillList />}
-        {activeTab === 'items' && <ItemsList />}
-        {activeTab === 'customers' && <CustomerList />}
-        {activeTab === 'reports' && <ReportsDashboard />}
-        {activeTab === 'settings' && <SettingsRoute />}
-      </main>
+        {/* Middle/Main Content Area */}
+        <main className={`flex-1 flex flex-col overflow-hidden relative ${!isTabletLandscape ? 'pb-14' : 'pb-0'}`}>
+          {activeTab === 'billing' && <BillRoute />}
+          {activeTab === 'history' && <BillList />}
+          {activeTab === 'items' && <ItemsList />}
+          {activeTab === 'customers' && <CustomerList />}
+          {activeTab === 'reports' && <ReportsDashboard />}
+          {activeTab === 'settings' && <SettingsRoute />}
+        </main>
+      </div>
+
+      {/* Bottom Navigation tabs (Tablet Portrait and Phone only) */}
+      {!isTabletLandscape && <Navigation />}
 
       {/* Global Modals (accessible across any active screen) */}
       <PaymentModal />

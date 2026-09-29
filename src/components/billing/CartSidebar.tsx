@@ -8,7 +8,6 @@ import {
   Tag, 
   ChevronRight, 
   Utensils, 
-  Bike, 
   Package, 
   FileEdit,
   Check
@@ -86,39 +85,30 @@ export const CartSidebar: React.FC = () => {
 
       {/* Order Type & Table Selection */}
       <div className="p-3 border-b border-slate-100 bg-white space-y-2">
-        <div className="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl">
+        <div className="grid grid-cols-2 gap-1.5 bg-slate-100 dark:bg-[#271C15] p-1 rounded-xl">
           <button
+            type="button"
             onClick={() => setOrderType('Dine-in')}
-            className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold transition ${
+            className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition cursor-pointer ${
               orderType === 'Dine-in'
-                ? 'bg-white text-teal-800 shadow-xs'
-                : 'text-slate-600 hover:text-slate-800'
+                ? 'bg-white dark:bg-[#2E2119] text-teal-800 dark:text-[#14A89B] shadow-xs'
+                : 'text-slate-600 dark:text-[#D4C7B5] hover:text-slate-800 dark:hover:text-[#F5F0E6]'
             }`}
           >
             <Utensils className="w-3.5 h-3.5" />
             <span>Dine-in</span>
           </button>
           <button
+            type="button"
             onClick={() => setOrderType('Takeaway')}
-            className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold transition ${
+            className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition cursor-pointer ${
               orderType === 'Takeaway'
-                ? 'bg-white text-teal-800 shadow-xs'
-                : 'text-slate-600 hover:text-slate-800'
+                ? 'bg-white dark:bg-[#2E2119] text-teal-800 dark:text-[#14A89B] shadow-xs'
+                : 'text-slate-600 dark:text-[#D4C7B5] hover:text-slate-800 dark:hover:text-[#F5F0E6]'
             }`}
           >
             <Package className="w-3.5 h-3.5" />
             <span>Takeaway</span>
-          </button>
-          <button
-            onClick={() => setOrderType('Delivery')}
-            className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold transition ${
-              orderType === 'Delivery'
-                ? 'bg-white text-teal-800 shadow-xs'
-                : 'text-slate-600 hover:text-slate-800'
-            }`}
-          >
-            <Bike className="w-3.5 h-3.5" />
-            <span>Delivery</span>
           </button>
         </div>
 

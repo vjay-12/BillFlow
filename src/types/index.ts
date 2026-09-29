@@ -66,6 +66,7 @@ export interface BusinessProfile {
   paperWidth: '58mm' | '80mm';
   printerBluetoothName?: string;
   upiId?: string;
+  upiQrCodeUrl?: string;
 }
 
 export type ActiveTab = 'billing' | 'history' | 'items' | 'customers' | 'reports' | 'settings';

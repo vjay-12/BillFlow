@@ -12,7 +12,9 @@ import {
   Receipt,
   Check,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  QrCode,
+  X
 } from 'lucide-react';
 import { db, INITIAL_BUSINESS_PROFILE } from '../db/schema';
 import { 
@@ -278,17 +280,6 @@ export const SettingsRoute: React.FC = () => {
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Merchant UPI VPA (for QR)</label>
-              <input
-                type="text"
-                value={profile.upiId || ''}
-                onChange={(e) => setProfile({ ...profile, upiId: e.target.value })}
-                placeholder="storename@oksbi"
-                className="w-full px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 font-mono focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white"
-              />
-            </div>
-
-            <div>
               <label className="block font-bold text-slate-700 mb-1">GSTIN Number</label>
               <input
                 type="text"
@@ -310,21 +301,110 @@ export const SettingsRoute: React.FC = () => {
           </div>
         </div>
 
-        {/* Hardware & Printer Settings */}
+        {/* Payment Details & UPI QR Section */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-4">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
-            <Printer className="w-5 h-5 text-teal-700" />
-            <h3 className="font-bold text-slate-800 text-sm">Thermal Printer & Hardware</h3>
+            <QrCode className="w-5 h-5 text-teal-700" />
+            <div>
+              <h3 className="font-bold text-slate-800 text-sm">Payment Details & UPI QR</h3>
+              <p className="text-[11px] text-slate-500">
+                Configure your store UPI ID and upload QR code image for customer scanning at checkout
+              </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Receipt Paper Roll Width</label>
+              <label className="block font-bold text-slate-700 mb-1">Merchant UPI ID (VPA)</label>
+              <input
+                type="text"
+                value={profile.upiId || ''}
+                onChange={(e) => setProfile({ ...profile, upiId: e.target.value })}
+                placeholder="storename@oksbi"
+                className="w-full px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white"
+              />
+              <p className="text-[10px] text-slate-400 mt-1">
+                Displayed as text below the QR code on the payment screen as a fallback reference.
+              </p>
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Upload QR Code</label>
+              <div className="flex items-center gap-3">
+                {profile.upiQrCodeUrl ? (
+                  <div className="relative shrink-0">
+                    <img
+                      src={profile.upiQrCodeUrl}
+                      alt="Uploaded Store QR Code"
+                      className="w-20 h-20 object-contain rounded-xl border border-slate-200 p-1 bg-white shadow-2xs"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setProfile({ ...profile, upiQrCodeUrl: '' })}
+                      className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white rounded-full p-1 shadow hover:bg-rose-600 transition cursor-pointer"
+                      title="Remove QR code"
+                    >
+                      <X className="w-3 h-3 stroke-[2.5]" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-20 h-20 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center text-slate-400 p-1 text-center shrink-0">
+                    <QrCode className="w-6 h-6 stroke-[1.5] mb-0.5 text-slate-300" />
+                    <span className="text-[9px] font-medium leading-none">No QR</span>
+                  </div>
+                )}
+
+                <div className="flex-1 space-y-1.5">
+                  <label className="inline-flex items-center gap-1.5 px-3 py-2 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-xl border border-teal-200 font-bold text-xs cursor-pointer transition">
+                    <Upload className="w-4 h-4" />
+                    <span>{profile.upiQrCodeUrl ? 'Replace QR Code' : 'Upload QR Code'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (file.size > 5 * 1024 * 1024) {
+                          alert('QR code image file must be under 5MB');
+                          return;
+                        }
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          const base64 = event.target?.result as string;
+                          setProfile({ ...profile, upiQrCodeUrl: base64 });
+                        };
+                        reader.readAsDataURL(file);
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                  <p className="text-[10px] text-slate-400 leading-tight">
+                    Upload image of your UPI QR code. It will be displayed prominently on the checkout payment window.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Hardware & Printer Settings */}
+        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+            <Printer className="w-5 h-5 text-teal-700" />
+            <div>
+              <h3 className="font-bold text-slate-800 text-sm">Thermal Printer & Hardware</h3>
+              <p className="text-[11px] text-slate-500">Configure receipt paper width preference and Bluetooth thermal printer</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Receipt Paper Roll Width (Saved Preference)</label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setProfile({ ...profile, paperWidth: '58mm' })}
-                  className={`py-2 px-3 rounded-xl border font-bold text-xs transition ${
+                  className={`py-2 px-3 rounded-xl border font-bold text-xs transition cursor-pointer ${
                     profile.paperWidth === '58mm'
                       ? 'border-teal-600 bg-teal-50 text-teal-800 ring-2 ring-teal-500/20'
                       : 'border-slate-200 bg-slate-50 text-slate-600'
@@ -335,7 +415,7 @@ export const SettingsRoute: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setProfile({ ...profile, paperWidth: '80mm' })}
-                  className={`py-2 px-3 rounded-xl border font-bold text-xs transition ${
+                  className={`py-2 px-3 rounded-xl border font-bold text-xs transition cursor-pointer ${
                     profile.paperWidth === '80mm'
                       ? 'border-teal-600 bg-teal-50 text-teal-800 ring-2 ring-teal-500/20'
                       : 'border-slate-200 bg-slate-50 text-slate-600'
@@ -344,6 +424,9 @@ export const SettingsRoute: React.FC = () => {
                   80mm (3 Inch Standard)
                 </button>
               </div>
+              <p className="text-[10px] text-slate-400 mt-1">
+                Receipts will automatically use this width setting without needing to choose per-bill.
+              </p>
             </div>
 
             <div>

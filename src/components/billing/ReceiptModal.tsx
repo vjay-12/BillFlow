@@ -1,26 +1,21 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { 
-  Printer, 
   Bluetooth, 
   X, 
-  Share2, 
   Plus, 
-  Smartphone
+  Receipt
 } from 'lucide-react';
 import { useUIStore } from '../../stores/uiStore';
 import { useCartStore } from '../../stores/cartStore';
 import { formatCurrency, formatDateTime } from '../../lib/formatters';
 import { bluetoothPrinter } from '../../printing/bluetoothPrinter';
 import { db, INITIAL_BUSINESS_PROFILE } from '../../db/schema';
-import { buildWhatsAppReceiptUrl } from '../../lib/formatWhatsAppMessage';
 import type { BusinessProfile } from '../../types';
 
 export const ReceiptModal: React.FC = () => {
   const { isReceiptModalOpen, setIsReceiptModalOpen, activeBillForReceipt } = useUIStore();
-  const [paperWidth, setPaperWidth] = useState<'58mm' | '80mm'>('80mm');
   const [isPrintingBt, setIsPrintingBt] = useState(false);
-  const [copiedSummary, setCopiedSummary] = useState(false);
 
   const dbProfile = useLiveQuery(async () => {
     return await db.businessProfile.get('main');
@@ -32,14 +27,13 @@ export const ReceiptModal: React.FC = () => {
   if (!isReceiptModalOpen || !activeBillForReceipt) return null;
 
   const bill = activeBillForReceipt;
+  // Automatically use the saved paperWidth preference from Settings (default 80mm)
+  const paperWidth = dbProfile?.paperWidth || '80mm';
+
   const profile: BusinessProfile = {
     ...INITIAL_BUSINESS_PROFILE,
     ...dbProfile,
     paperWidth,
-  };
-
-  const handleBrowserPrint = () => {
-    window.print();
   };
 
   const handleBluetoothPrint = async () => {
@@ -48,85 +42,44 @@ export const ReceiptModal: React.FC = () => {
       await bluetoothPrinter.printReceipt(bill, profile);
       alert('Receipt sent to Bluetooth thermal printer successfully!');
     } catch (err: any) {
-      alert(`Bluetooth print error: ${err.message}. You can use "Browser Print" as fallback.`);
+      alert(`Bluetooth print error: ${err.message || 'Printer unavailable'}`);
     } finally {
       setIsPrintingBt(false);
     }
   };
 
-  const handleSendWhatsAppText = () => {
-    let phone = bill.customerPhone?.trim() || '';
-    if (!phone) {
-      const input = window.prompt(
-        'Enter customer 10-digit mobile number for WhatsApp receipt:',
-        ''
-      );
-      if (!input) return;
-      const digits = input.replace(/\D/g, '');
-      if (digits.length < 10) {
-        alert('Please enter a valid 10-digit mobile number.');
-        return;
-      }
-      phone = digits;
-    }
-
-    const waUrl = buildWhatsAppReceiptUrl(phone, bill, profile, isGstEnabled);
-    window.open(waUrl, '_blank', 'noopener,noreferrer');
-  };
-
-  const handleCopyText = () => {
-    const text = 
-      `--- ${profile.name} ---\n` +
-      `Bill #${bill.billNo} | Total: ${formatCurrency(bill.total)} (${bill.paymentMode})\n` +
-      `Items: ${bill.lines.map(l => `${l.name} x${l.qty}`).join(', ')}`;
-    navigator.clipboard?.writeText(text);
-    setCopiedSummary(true);
-    setTimeout(() => setCopiedSummary(false), 2000);
-  };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/70 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh]">
-        {/* Modal Controls Bar */}
-        <div className="no-print px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/70 dark:bg-black/75 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-[#2E2119] rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200 dark:border-[#3D2C20] overflow-hidden flex flex-col max-h-[92vh]">
+        {/* Modal Controls Bar — Clean Header with Saved Preference Badge */}
+        <div className="no-print px-4 py-3 border-b border-slate-100 dark:border-[#3D2C20] flex items-center justify-between bg-slate-50 dark:bg-[#271C15]">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-800 text-sm">Receipt Preview</span>
-            {/* Paper width toggle */}
-            <div className="flex bg-slate-200 p-0.5 rounded-lg text-[11px] font-bold">
-              <button
-                onClick={() => setPaperWidth('58mm')}
-                className={`px-2 py-0.5 rounded ${
-                  paperWidth === '58mm' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600'
-                }`}
-              >
-                58mm
-              </button>
-              <button
-                onClick={() => setPaperWidth('80mm')}
-                className={`px-2 py-0.5 rounded ${
-                  paperWidth === '80mm' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600'
-                }`}
-              >
-                80mm
-              </button>
-            </div>
+            <Receipt className="w-4 h-4 text-teal-700 dark:text-[#14A89B]" />
+            <span className="font-bold text-slate-800 dark:text-[#F5F0E6] text-sm">
+              Receipt Preview
+            </span>
+            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-[#38291F] text-slate-600 dark:text-[#D4C7B5]">
+              {paperWidth}
+            </span>
           </div>
 
           <button
+            type="button"
             onClick={() => setIsReceiptModalOpen(false)}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition"
+            aria-label="Close receipt modal"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:text-[#B8A990] dark:hover:text-[#F5F0E6] hover:bg-slate-200 dark:hover:bg-[#38291F] transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Scrollable Receipt Body */}
-        <div className="flex-1 overflow-y-auto p-4 bg-slate-100 flex justify-center">
+        <div className="flex-1 overflow-y-auto p-4 bg-slate-100 dark:bg-[#211712] flex justify-center">
           {/* Authentic Thermal Paper Card */}
           <div
             id="thermal-receipt-print-area"
             style={{ width: paperWidth === '58mm' ? '280px' : '360px' }}
-            className="bg-white shadow-md border border-slate-200 p-5 font-receipt text-xs leading-relaxed text-slate-900 select-text transition-all duration-200"
+            className="bg-white shadow-md border border-slate-200 p-5 font-receipt text-xs leading-relaxed text-slate-900 select-text transition-all duration-200 rounded-sm"
           >
             {/* Store Header */}
             <div className="text-center space-y-0.5 border-b border-dashed border-slate-300 pb-3">
@@ -241,58 +194,29 @@ export const ReceiptModal: React.FC = () => {
           </div>
         </div>
 
-        {/* Action Buttons Footer */}
-        <div className="no-print p-3.5 sm:p-4 bg-white border-t border-slate-200 space-y-2">
-          <div className="grid grid-cols-2 gap-2">
+        {/* Simplified Action Buttons Footer — Only BT Thermal Print and New Sale */}
+        <div className="no-print p-3.5 sm:p-4 bg-white dark:bg-[#2E2119] border-t border-slate-200 dark:border-[#3D2C20]">
+          <div className="grid grid-cols-2 gap-3">
             <button
-              onClick={handleBrowserPrint}
-              className="py-2.5 px-3 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition"
-            >
-              <Printer className="w-4 h-4" />
-              <span>Browser Print</span>
-            </button>
-
-            <button
+              type="button"
               onClick={handleBluetoothPrint}
               disabled={isPrintingBt}
-              className="py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition disabled:opacity-50"
+              className="py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition disabled:opacity-50 cursor-pointer"
             >
               <Bluetooth className="w-4 h-4 text-blue-400" />
               <span>{isPrintingBt ? 'Sending...' : 'BT Thermal Print'}</span>
             </button>
-          </div>
 
             <button
-              onClick={handleSendWhatsAppText}
-              className="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition cursor-pointer"
-              title={
-                bill.customerPhone
-                  ? `Send formatted receipt to ${bill.customerPhone} on WhatsApp`
-                  : 'Prompt for phone number and send receipt via WhatsApp'
-              }
+              type="button"
+              onClick={() => setIsReceiptModalOpen(false)}
+              className="py-3 px-4 rounded-xl bg-teal-700 hover:bg-teal-800 text-white dark:bg-[#14A89B] dark:hover:bg-[#17BEAF] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition cursor-pointer"
             >
-              <Smartphone className="w-4 h-4 text-emerald-100 shrink-0" />
-              <span>Send via WhatsApp</span>
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>New Sale</span>
             </button>
-
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={handleCopyText}
-                className="py-2 px-3 rounded-xl border border-slate-200 dark:border-[#3D2C20] bg-slate-50 dark:bg-[#342419] text-slate-700 dark:text-[#E8DCC8] hover:bg-slate-100 font-bold text-xs flex items-center justify-center gap-1.5 transition"
-              >
-                <Share2 className="w-3.5 h-3.5 shrink-0 text-slate-500" />
-                <span>{copiedSummary ? 'Copied!' : 'Copy Summary'}</span>
-              </button>
-
-              <button
-                onClick={() => setIsReceiptModalOpen(false)}
-                className="py-2 px-3 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/60 text-teal-800 dark:text-teal-300 hover:bg-teal-100 font-bold text-xs flex items-center justify-center gap-1.5 transition"
-              >
-                <Plus className="w-3.5 h-3.5 text-teal-700 dark:text-teal-400 shrink-0" />
-                <span className="font-bold">New Sale</span>
-              </button>
-            </div>
           </div>
+        </div>
       </div>
     </div>
   );

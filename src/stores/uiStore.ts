@@ -44,6 +44,11 @@ interface UIState {
   isDarkMode: boolean;
   setDarkMode: (enabled: boolean) => void;
   toggleDarkMode: () => void;
+
+  // Tablet Landscape Sidebar
+  isSidebarCollapsed: boolean;
+  setSidebarCollapsed: (collapsed: boolean) => void;
+  toggleSidebar: () => void;
 }
 
 export const useUIStore = create<UIState>((set, get) => ({
@@ -120,5 +125,23 @@ export const useUIStore = create<UIState>((set, get) => ({
       }
     }
     set({ isDarkMode: next });
+  },
+
+  isSidebarCollapsed: (() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('billflow_sidebar_collapsed') === 'true';
+  })(),
+  setSidebarCollapsed: (collapsed: boolean) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('billflow_sidebar_collapsed', String(collapsed));
+    }
+    set({ isSidebarCollapsed: collapsed });
+  },
+  toggleSidebar: () => {
+    const next = !get().isSidebarCollapsed;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('billflow_sidebar_collapsed', String(next));
+    }
+    set({ isSidebarCollapsed: next });
   },
 }));

@@ -1,22 +1,42 @@
+import React from 'react';
 import { ItemGrid } from '../components/billing/ItemGrid';
 import { CartSidebar } from '../components/billing/CartSidebar';
 import { StickyCartBar } from '../components/billing/StickyCartBar';
+import { useTabletLandscape } from '../lib/useTabletLandscape';
 
 export const BillRoute: React.FC = () => {
+  const isTabletLandscape = useTabletLandscape();
+
   return (
-    <div id="bill-route-container" className="flex-1 flex flex-col lg:flex-row h-full lg:h-[calc(100vh-100px)] overflow-y-auto lg:overflow-hidden relative">
-      {/* Left side (Desktop) / Top section (Mobile): Item Catalog Grid */}
-      <div className="w-full lg:flex-1 lg:h-full lg:overflow-hidden flex flex-col bg-slate-50 shrink-0 lg:shrink">
+    <div 
+      id="bill-route-container" 
+      className={`flex-1 flex h-full relative ${
+        isTabletLandscape ? 'flex-row overflow-hidden' : 'flex-col overflow-y-auto'
+      }`}
+    >
+      {/* Left/Middle section: Item Catalog Grid */}
+      <div 
+        className={`w-full flex flex-col bg-slate-50 dark:bg-[#211712] ${
+          isTabletLandscape ? 'flex-1 h-full overflow-hidden' : 'shrink-0'
+        }`}
+      >
         <ItemGrid />
       </div>
 
-      {/* Right side (Desktop) / Bottom section (Mobile): Active Cart & Checkout */}
-      <div id="cart-checkout-section" className="w-full lg:w-auto h-auto lg:h-full border-t lg:border-t-0 shrink-0 lg:shrink">
+      {/* Right section: Active Cart & Checkout Panel */}
+      <div 
+        id="cart-checkout-section" 
+        className={`${
+          isTabletLandscape 
+            ? 'w-[380px] xl:w-[420px] h-full border-l border-slate-200 dark:border-[#3D2C20] shrink-0 z-10' 
+            : 'w-full h-auto border-t border-slate-200 dark:border-[#3D2C20] shrink-0'
+        }`}
+      >
         <CartSidebar />
       </div>
 
-      {/* Mobile Floating Sticky Cart Bar */}
-      <StickyCartBar />
+      {/* Mobile/Portrait Floating Sticky Cart Bar (tablet landscape uses the right-side CartSidebar) */}
+      {!isTabletLandscape && <StickyCartBar />}
     </div>
   );
 };

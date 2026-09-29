@@ -44,6 +44,7 @@ export const INITIAL_BUSINESS_PROFILE: BusinessProfile = {
   enableGst: true,
   paperWidth: '80mm',
   upiId: 'pasumaicafe@oksbi',
+  upiQrCodeUrl: '',
   printerBluetoothName: 'Pasumai Thermal 80mm',
 };
 
