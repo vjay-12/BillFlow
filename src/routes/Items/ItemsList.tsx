@@ -20,11 +20,15 @@ export const ItemsList: React.FC = () => {
   const [selectedCat, setSelectedCat] = useState('All');
   const [showArchived, setShowArchived] = useState(false);
 
+  const profile = useLiveQuery(() => db.businessProfile.get('main'), []);
+  const showNonVeg = profile?.showNonVeg !== false;
+
   const items = useLiveQuery(async () => {
     let query = db.items.toCollection();
     let all = await query.toArray();
 
     return all.filter((i) => {
+      if (!showNonVeg && i.isVeg === false) return false;
       if (!showArchived && !i.active) return false;
       if (showArchived && i.active) return false;
       if (selectedCat !== 'All' && i.category !== selectedCat) return false;
@@ -32,15 +36,19 @@ export const ItemsList: React.FC = () => {
         const q = search.toLowerCase();
         return (
           i.name.toLowerCase().includes(q) ||
+          (i.nameTamil && i.nameTamil.toLowerCase().includes(q)) ||
           i.code.toLowerCase().includes(q) ||
           i.category.toLowerCase().includes(q)
         );
       }
       return true;
     });
-  }, [search, selectedCat, showArchived]);
+  }, [search, selectedCat, showArchived, showNonVeg]);
 
-  const allItemsForCategories = useLiveQuery(() => db.items.toArray(), []);
+  const allItemsForCategories = useLiveQuery(async () => {
+    const all = await db.items.toArray();
+    return showNonVeg ? all : all.filter((i) => i.isVeg !== false);
+  }, [showNonVeg]);
   const categories = useMemo(() => {
     const preferred = ['All', 'Tiffin', 'Lunch', 'Snacks', 'Special', 'Sweets'];
     if (!allItemsForCategories) return preferred;
@@ -154,11 +162,11 @@ export const ItemsList: React.FC = () => {
                 key={item.id}
                 className="p-3.5 hover:bg-slate-50/70 transition flex flex-col gap-1"
               >
-                {/* Line 1: Item name (bold) + veg/non-veg dot icon, with price aligned to the right on the same line */}
+                {/* Line 1: Item name (bold) + Tamil name (secondary) + veg/non-veg dot icon, with price aligned to the right on the same line */}
                 <div className="flex items-start justify-between gap-2.5">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <div className="flex items-start gap-2 min-w-0 flex-1">
                     <span
-                      className={`w-3.5 h-3.5 rounded-xs border flex items-center justify-center p-0.5 shrink-0 ${
+                      className={`w-3.5 h-3.5 rounded-xs border flex items-center justify-center p-0.5 shrink-0 mt-0.5 ${
                         item.isVeg ? 'border-emerald-600' : 'border-rose-600'
                       }`}
                     >
@@ -168,9 +176,16 @@ export const ItemsList: React.FC = () => {
                         }`}
                       />
                     </span>
-                    <span className="font-bold text-slate-900 text-sm leading-snug break-words">
-                      {item.name}
-                    </span>
+                    <div className="min-w-0 flex-1">
+                      <span className="font-bold text-slate-900 text-sm leading-snug truncate block" title={item.name}>
+                        {item.name}
+                      </span>
+                      {item.nameTamil && (
+                        <span className="text-xs text-slate-500 font-medium truncate block mt-0.5" title={item.nameTamil}>
+                          {item.nameTamil}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="shrink-0 text-right font-mono font-extrabold text-slate-900 text-sm">
@@ -251,7 +266,7 @@ export const ItemsList: React.FC = () => {
                   {items.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-50/70 transition">
                       <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
                           <span
                             className={`w-3.5 h-3.5 rounded-xs border flex items-center justify-center p-0.5 shrink-0 ${
                               item.isVeg ? 'border-emerald-600' : 'border-rose-600'
@@ -263,11 +278,16 @@ export const ItemsList: React.FC = () => {
                               }`}
                             />
                           </span>
-                          <div>
-                            <span className="font-bold text-slate-900 block text-xs sm:text-sm">
+                          <div className="min-w-0 max-w-xs sm:max-w-sm">
+                            <span className="font-bold text-slate-900 block text-xs sm:text-sm truncate" title={item.name}>
                               {item.name}
                             </span>
-                            <span className="text-[10px] text-slate-400">
+                            {item.nameTamil && (
+                              <span className="text-[11px] text-slate-500 font-medium block truncate" title={item.nameTamil}>
+                                {item.nameTamil}
+                              </span>
+                            )}
+                            <span className="text-[10px] text-slate-400 block truncate">
                               {item.isVeg ? 'Vegetarian' : 'Non-Veg'}
                             </span>
                           </div>

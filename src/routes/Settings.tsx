@@ -14,7 +14,9 @@ import {
   ShieldCheck,
   AlertCircle,
   QrCode,
-  X
+  X,
+  Languages,
+  UtensilsCrossed
 } from 'lucide-react';
 import { db, INITIAL_BUSINESS_PROFILE } from '../db/schema';
 import { 
@@ -155,6 +157,120 @@ export const SettingsRoute: React.FC = () => {
             <span>Settings Saved!</span>
           </div>
         )}
+      </div>
+
+      {/* Menu & Language Preferences */}
+      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <UtensilsCrossed className="w-5 h-5 text-teal-700" />
+            <div>
+              <h3 className="font-bold text-slate-800 text-sm">Menu & Language Preferences</h3>
+              <p className="text-[11px] text-slate-500">
+                Configure non-veg item visibility and menu display language
+              </p>
+            </div>
+          </div>
+
+          <span
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
+              profile.showNonVeg !== false
+                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                : 'bg-amber-50 text-amber-800 border border-amber-200'
+            }`}
+          >
+            {profile.showNonVeg !== false ? 'Non-Veg Visible' : 'Pure Veg Mode (Non-Veg Hidden)'}
+          </span>
+        </div>
+
+        {/* Setting 1: Show Non-Veg Items Toggle */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+          <div className="space-y-1 max-w-xl">
+            <span className="font-bold text-slate-900 text-sm">Show Non-Veg Items</span>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              When enabled, non-vegetarian items and the "Non-Veg" diet filter chip appear across Billing POS and Menu Catalog. When disabled, all non-veg items are cleanly hidden from display and counts without deleting any underlying data.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 shrink-0 self-start sm:self-center">
+            <span className="text-xs font-bold text-slate-600">
+              {profile.showNonVeg !== false ? 'Enabled' : 'Disabled'}
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={profile.showNonVeg !== false}
+              aria-label="Toggle Non-Veg visibility"
+              onClick={async () => {
+                const nextState = profile.showNonVeg === false;
+                const updated = { ...profile, showNonVeg: nextState };
+                setProfile(updated);
+                await db.businessProfile.put({ ...updated, id: 'main' } as any);
+              }}
+              className={`relative inline-flex h-8 w-15 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2 ${
+                profile.showNonVeg !== false ? 'bg-teal-700' : 'bg-slate-300'
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-flex h-7 w-7 transform rounded-full bg-white shadow-md ring-0 items-center justify-center transition duration-200 ease-in-out ${
+                  profile.showNonVeg !== false ? 'translate-x-7' : 'translate-x-0'
+                }`}
+              >
+                {profile.showNonVeg !== false ? (
+                  <Check className="w-4 h-4 text-teal-700" />
+                ) : (
+                  <span className="text-[10px] font-bold text-slate-400">Off</span>
+                )}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* Setting 2: Menu Language Selector */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+          <div className="space-y-1 max-w-xl">
+            <div className="flex items-center gap-1.5">
+              <Languages className="w-4 h-4 text-teal-700" />
+              <span className="font-bold text-slate-900 text-sm">Menu Display Language</span>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Controls item name display language on the main Billing POS cards. Admin Menu & Items view always shows both English and Tamil names together. Receipts, buttons, and navigation remain in English.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={async () => {
+                const updated = { ...profile, menuLanguage: 'English' as const };
+                setProfile(updated);
+                await db.businessProfile.put({ ...updated, id: 'main' } as any);
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer border ${
+                (profile.menuLanguage || 'English') === 'English'
+                  ? 'bg-teal-700 text-white border-teal-700 shadow-xs'
+                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+              }`}
+            >
+              English
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                const updated = { ...profile, menuLanguage: 'Tamil' as const };
+                setProfile(updated);
+                await db.businessProfile.put({ ...updated, id: 'main' } as any);
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer border ${
+                profile.menuLanguage === 'Tamil'
+                  ? 'bg-teal-700 text-white border-teal-700 shadow-xs'
+                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+              }`}
+            >
+              தமிழ் (Tamil)
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Tax & GST Settings */}

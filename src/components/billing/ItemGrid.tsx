@@ -16,20 +16,35 @@ export const ItemGrid: React.FC = () => {
   const cartLines = useCartStore((s) => s.lines);
   const [dietFilter, setDietFilter] = useState<'all' | 'veg' | 'non-veg'>('all');
 
+  // Profile settings for non-veg visibility and menu display language
+  const profile = useLiveQuery(() => db.businessProfile.get('main'), []);
+  const showNonVeg = profile?.showNonVeg !== false;
+  const menuLanguage = profile?.menuLanguage || 'English';
+
   // Robust live query to load all active items reliably across devices
-  const items = useLiveQuery(async () => {
+  const allActiveItems = useLiveQuery(async () => {
     const all = await db.items.toArray();
     return all.filter((i) => i.active !== false);
   }, []);
 
+  // Filter out non-veg items if toggle is disabled (never delete data)
+  const items = useMemo(() => {
+    if (!allActiveItems) return undefined;
+    if (showNonVeg) return allActiveItems;
+    return allActiveItems.filter((i) => i.isVeg !== false);
+  }, [allActiveItems, showNonVeg]);
+
+  // Active diet filter: if non-veg is hidden, 'non-veg' filter naturally resolves to 'all'
+  const activeDietFilter = (!showNonVeg && dietFilter === 'non-veg') ? 'all' : dietFilter;
+
   // Guarantee seed data exists if table is empty
   useEffect(() => {
-    if (items !== undefined && items.length === 0) {
+    if (allActiveItems !== undefined && allActiveItems.length === 0) {
       seedInitialDataIfNeeded();
     }
-  }, [items]);
+  }, [allActiveItems]);
 
-  // Compute available categories from actual active items
+  // Compute available categories from actual active visible items
   const categories = useMemo(() => {
     const defaultPreferred = ['All', 'Tiffin', 'Lunch', 'Snacks', 'Special', 'Sweets'];
     if (!items || items.length === 0) return defaultPreferred;
@@ -51,7 +66,7 @@ export const ItemGrid: React.FC = () => {
     }
   }, [items, selectedCategory, setSelectedCategory]);
 
-  // Filter items based on Category, Diet, and Search query
+  // Filter items based on Category, Diet, and Search query (matching both English & Tamil names)
   const filteredItems = useMemo(() => {
     if (!items) return [];
     return items.filter((item) => {
@@ -60,19 +75,20 @@ export const ItemGrid: React.FC = () => {
         return false;
       }
       // Diet match
-      if (dietFilter === 'veg' && item.isVeg !== true) return false;
-      if (dietFilter === 'non-veg' && item.isVeg === true) return false;
+      if (activeDietFilter === 'veg' && item.isVeg !== true) return false;
+      if (activeDietFilter === 'non-veg' && item.isVeg === true) return false;
       // Search match
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase().trim();
         const matchesName = item.name.toLowerCase().includes(query);
+        const matchesTamil = item.nameTamil ? item.nameTamil.toLowerCase().includes(query) : false;
         const matchesCode = item.code.toLowerCase().includes(query);
         const matchesCategory = item.category.toLowerCase().includes(query);
-        return matchesName || matchesCode || matchesCategory;
+        return matchesName || matchesTamil || matchesCode || matchesCategory;
       }
       return true;
     });
-  }, [items, selectedCategory, dietFilter, searchQuery]);
+  }, [items, selectedCategory, activeDietFilter, searchQuery]);
 
   const getItemCartQty = (itemId: string) => {
     const line = cartLines.find((l) => l.itemId === itemId);
@@ -150,9 +166,10 @@ export const ItemGrid: React.FC = () => {
         <div className="flex items-center justify-between gap-2 pt-0.5 text-xs">
           <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg">
             <button
+              type="button"
               onClick={() => setDietFilter('all')}
-              className={`px-2.5 py-1 rounded-md font-semibold transition ${
-                dietFilter === 'all'
+              className={`px-2.5 py-1 rounded-md font-semibold transition cursor-pointer ${
+                activeDietFilter === 'all'
                   ? 'bg-white text-slate-800 shadow-xs'
                   : 'text-slate-500 hover:text-slate-700'
               }`}
@@ -160,9 +177,10 @@ export const ItemGrid: React.FC = () => {
               All Diet
             </button>
             <button
+              type="button"
               onClick={() => setDietFilter('veg')}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-md font-semibold transition ${
-                dietFilter === 'veg'
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-md font-semibold transition cursor-pointer ${
+                activeDietFilter === 'veg'
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : 'text-slate-500 hover:text-emerald-700'
               }`}
@@ -170,17 +188,20 @@ export const ItemGrid: React.FC = () => {
               <Leaf className="w-3 h-3" />
               100% Veg
             </button>
-            <button
-              onClick={() => setDietFilter('non-veg')}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-md font-semibold transition ${
-                dietFilter === 'non-veg'
-                  ? 'bg-rose-600 text-white shadow-xs'
-                  : 'text-slate-500 hover:text-rose-700'
-              }`}
-            >
-              <Flame className="w-3 h-3" />
-              Non-Veg
-            </button>
+            {showNonVeg && (
+              <button
+                type="button"
+                onClick={() => setDietFilter('non-veg')}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md font-semibold transition cursor-pointer ${
+                  activeDietFilter === 'non-veg'
+                    ? 'bg-rose-600 text-white shadow-xs'
+                    : 'text-slate-500 hover:text-rose-700'
+                }`}
+              >
+                <Flame className="w-3 h-3" />
+                Non-Veg
+              </button>
+            )}
           </div>
 
           <div className="text-slate-400 font-medium text-[11px] truncate">
@@ -259,6 +280,7 @@ export const ItemGrid: React.FC = () => {
           }>
             {filteredItems.map((item) => {
               const inCartQty = getItemCartQty(item.id);
+              const displayName = (menuLanguage === 'Tamil' && item.nameTamil) ? item.nameTamil : item.name;
 
               return (
                 <div
@@ -307,20 +329,23 @@ export const ItemGrid: React.FC = () => {
                   </div>
 
                   {/* Item Name & Category */}
-                  <div className="mb-2">
-                    <div className="flex items-center gap-1 flex-wrap">
-                      <h4 className={`font-bold text-slate-800 dark:text-[#F5F0E6] line-clamp-2 leading-snug group-hover:text-teal-700 dark:group-hover:text-[#14A89B] transition ${
-                        isTabletLandscape ? 'text-sm sm:text-base' : 'text-xs sm:text-sm'
-                      }`}>
-                        {item.name}
+                  <div className="mb-2 min-w-0">
+                    <div className="flex items-center gap-1 min-w-0">
+                      <h4
+                        title={displayName}
+                        className={`font-bold text-slate-800 dark:text-[#F5F0E6] truncate group-hover:text-teal-700 dark:group-hover:text-[#14A89B] transition ${
+                          isTabletLandscape ? 'text-sm sm:text-base' : 'text-xs sm:text-sm'
+                        }`}
+                      >
+                        {displayName}
                       </h4>
                       {item.name === 'Veg Omlet' && (
-                        <span className="text-[8px] font-bold text-amber-700 bg-amber-50 px-1 py-0.2 rounded border border-amber-200" title="Egg substitute. Flagged for owner confirmation.">
+                        <span className="shrink-0 text-[8px] font-bold text-amber-700 bg-amber-50 px-1 py-0.2 rounded border border-amber-200" title="Egg substitute. Flagged for owner confirmation.">
                           Confirm
                         </span>
                       )}
                     </div>
-                    <span className={`text-slate-400 dark:text-[#B8A990] font-medium ${
+                    <span className={`text-slate-400 dark:text-[#B8A990] font-medium truncate block ${
                       isTabletLandscape ? 'text-[11px]' : 'text-[10px]'
                     }`}>
                       {item.category}

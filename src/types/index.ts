@@ -1,6 +1,7 @@
 export interface Item {
   id: string;
   name: string;
+  nameTamil?: string;
   code: string;
   category: string;
   price: number;
@@ -63,6 +64,8 @@ export interface BusinessProfile {
   currencySymbol: string;
   defaultTaxPercent: number;
   enableGst?: boolean;
+  showNonVeg?: boolean;
+  menuLanguage?: 'English' | 'Tamil';
   paperWidth: '58mm' | '80mm';
   printerBluetoothName?: string;
   upiId?: string;

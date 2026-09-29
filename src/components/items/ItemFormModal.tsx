@@ -8,6 +8,7 @@ export const ItemFormModal: React.FC = () => {
   const { isItemFormModalOpen, setIsItemFormModalOpen, editingItem, setEditingItem } = useUIStore();
 
   const [name, setName] = useState(editingItem?.name || '');
+  const [nameTamil, setNameTamil] = useState(editingItem?.nameTamil || '');
   const [code, setCode] = useState(editingItem?.code || '');
   const [category, setCategory] = useState(editingItem?.category || 'Tiffin');
   const [price, setPrice] = useState<number>(editingItem?.price ?? 50);
@@ -18,12 +19,14 @@ export const ItemFormModal: React.FC = () => {
     setPrevEditing(editingItem);
     if (editingItem) {
       setName(editingItem.name);
+      setNameTamil(editingItem.nameTamil || '');
       setCode(editingItem.code);
       setCategory(editingItem.category);
       setPrice(editingItem.price);
       setIsVeg(editingItem.isVeg ?? true);
     } else {
       setName('');
+      setNameTamil('');
       setCode('');
       setCategory('Tiffin');
       setPrice(50);
@@ -44,6 +47,7 @@ export const ItemFormModal: React.FC = () => {
       if (editingItem) {
         await itemsRepo.update(editingItem.id, {
           name,
+          nameTamil: nameTamil.trim() || undefined,
           code,
           category,
           price: Number(price),
@@ -53,6 +57,7 @@ export const ItemFormModal: React.FC = () => {
         const newItem: Item = {
           id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           name,
+          nameTamil: nameTamil.trim() || undefined,
           code,
           category,
           price: Number(price),
@@ -106,6 +111,19 @@ export const ItemFormModal: React.FC = () => {
               onChange={(e) => setName(e.target.value)}
               className="w-full px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white"
             />
+          </div>
+
+          {/* Tamil Name */}
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">Tamil Name (Optional)</label>
+            <input
+              type="text"
+              placeholder="e.g. சிறுதானிய மசாலா தோசை"
+              value={nameTamil}
+              onChange={(e) => setNameTamil(e.target.value)}
+              className="w-full px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white"
+            />
+            <p className="text-[10px] text-slate-400 mt-1">Displays on Billing POS cards when Tamil menu language is selected.</p>
           </div>
 
           {/* SKU Code & Category */}

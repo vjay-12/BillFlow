@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-sans: 'Plus Jakarta Sans', 'Noto Sans Tamil', system-ui, -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
     
     /* Theme tokens - Light mode */
